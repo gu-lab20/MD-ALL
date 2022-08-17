@@ -1,0 +1,13 @@
+COH_sample	diag	cluster	N_diagCluster	N_cluster	ratio	diag_pred	diag_pred_granular	diag_pred_freq	FeatureN	top_neighborN
+COH001000_D1	_Prediction	2	1	241	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;95%)	50	20
+COH001000_D1	_Prediction	7	1	237	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;97%)	500	20
+COH001000_D1	_Prediction	7	1	244	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;94%)	950	20
+COH001000_D1	_Prediction	7	1	244	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;94%)	1400	20
+COH001000_D1	_Prediction	6	1	236	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;97%)	1850	20
+COH001000_D1	_Prediction	7	1	234	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;98%)	2300	20
+COH001000_D1	_Prediction	7	1	239	0	Hyperdiploid	Hyperdiploid	Hyperdiploid(230;96%)	2750	20
+COH001000_D1	_Prediction	10	1	45	0.02	Hyperdiploid	Hyperdiploid_2	Hyperdiploid(44;98%)	3200	20
+COH001000_D1	_Prediction	10	1	45	0.02	Hyperdiploid	Hyperdiploid_2	Hyperdiploid(44;98%)	3650	20
+COH001000_D1	_Prediction	9	1	47	0.02	Hyperdiploid	Hyperdiploid_2	Hyperdiploid(46;98%)	4100	20
+COH001000_D1	_Prediction	10	1	49	0.02	Hyperdiploid	Hyperdiploid_2	Hyperdiploid(48;98%)	4550	20
+COH001000_D1	_Prediction	9	1	49	0.02	Hyperdiploid	Hyperdiploid_2	Hyperdiploid(48;98%)	5000	20
