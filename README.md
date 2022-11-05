@@ -13,10 +13,10 @@ data.
 ## Installation
 
 You can install the released version of MDALL from
-[CRAN](https://CRAN.R-project.org) with:
+[github](https://github.com/gu-lab20/MD-ALL) with:
 
 ``` r
-install.packages("MDALL")
+devtools::install_github("gu-lab20/MD-ALL")
 ```
 
 ## Example
