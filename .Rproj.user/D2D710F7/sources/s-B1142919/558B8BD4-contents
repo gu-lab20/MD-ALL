@@ -1,0 +1,305 @@
+#load functions ----------------
+gc(rm(list=ls()))
+gulab="//isi-dcnl/user_data/zgu_grp/";
+setwd(gulab)
+source("DryLab/bin/zuhu/R/singlecell/F_sc.R")
+
+#load working dir ------------------------------------------------------------
+setwd("C:/Users/zuhu/OneDrive - City of Hope National Medical Center/project/ZGu/singlecell_PAX5/")
+
+load("../singelcell_ref/celldex/mouse/mouse_ImmGenData.rdata")
+cols_in=DiscretePalette(length(unique(mouse_ImmGenData$cellType)))
+names(cols_in)=unique(mouse_ImmGenData$cellType)
+
+df_ref=as.matrix(assay(mouse_ImmGenData))
+
+obj_ref=CreateSeuratObject(df_ref)
+
+obj_ref=SCTransform2cluster(obj_ref,resolution = 2,n_pc = 50)
+
+df_ref_sct=as.matrix(GetAssayData(obj_ref[["SCT"]],slot="data"))
+
+df_col=colData(mouse_ImmGenData)
+
+
+ref_mouse_ImmGenData=create_singleR_ref(df_ref_sct,df_col,"cellType")
+
+
+
+
+
+SC_id_list=c("M0017","M0018","M0019","M0021")
+
+SC_id="M0017"
+SC_id="M0018"
+SC_id="M0019"
+SC_id="M0021"
+
+for(SC_id in c("M0017","M0018","M0019","M0021")){
+load(paste0("3.obj_demultiplexing/4mouse/",SC_id,".rdata"))
+
+
+dir_objRaw=paste0("1.obj_raw_new/",SC_id,"/")
+dir_objQC=paste0("2.obj_qc_new/",SC_id,"/")
+dir_mutPlot=paste0("4.mutation_new/",SC_id,"/")
+dir_vdjPlot=paste0("5.VDJ_new/",SC_id,"/")
+
+dir.create(dir_objRaw)
+dir.create(dir_mutPlot)
+dir.create(dir_vdjPlot)
+dir.create(dir_objQC)
+
+#run sc analusis 
+
+matrix_count=as.matrix(GetAssayData(obj_[["RNA"]],slot="counts"))
+
+obj_=CreateSeuratObject(matrix_count)
+
+obj_[["group"]]=SC_id
+
+obj_=add_qc_measurements(obj_,housekeepinngGene = hkgenes_mouse)
+
+obj_=SCTransform2cluster(obj_,resolution = 2,n_pc = 50,variable.features.n = 5000)
+
+DimPlot(obj_)
+
+obj_ = CellCycleScoring(object = obj_, s.features = s.genes_mouse, g2m.features = g2m.genes_mouse)
+
+Idents(obj_)="group"
+
+draw_VlnPlot_qc(obj_,paste0(dir_objRaw,"/VlnPlot_qc"))
+draw_correlationPlot_qc(obj_,paste0(dir_objRaw,"/correlationPlot_qc"))
+draw_Dimplot_qc(obj_,paste0(dir_objRaw,"/umap_qc"))
+
+#run QC ------------
+df_cutoff=get_cutoff(obj_)
+
+write_tsv(df_cutoff,paste0(dir_objQC,"df_qc.tsv"))
+
+obj2=subset(obj_,nCount_RNA<df_cutoff$medianAdd3MAD[df_cutoff$var=="nCount_RNA"] & 
+              nFeature_RNA < df_cutoff$medianAdd3MAD[df_cutoff$var=="nFeature_RNA"] & 
+              percent.mt < 5 
+            
+)
+
+
+obj2=add_qc_measurements(obj2,housekeepinngGene = hkgenes_mouse)
+
+obj2=SCTransform2cluster(obj2,resolution = 2,n_pc = 50,variable.features.n = 5000)
+
+obj2 = CellCycleScoring(object = obj2, s.features = s.genes_mouse, g2m.features = g2m.genes_mouse)
+
+Idents(obj2)="group"
+
+DimPlot(obj2)
+
+
+draw_VlnPlot_qc(obj2,paste0(dir_objQC,"VlnPlot_qc"))
+draw_correlationPlot_qc(obj2,outfile_prefix=paste0(dir_objQC,"correlationPlot_qc"))
+draw_Dimplot_qc(obj2,outfile_prefix=paste0(dir_objQC,"umap_qc"))
+
+
+#get cell reads counts --------------
+read_counts=read_tsv("0.data_raw/COHSC000001/Expression/COHSC000001_Expression1.splitfq_cell.log")
+
+df_reads=get_barcode_df(obj2) %>% left_join(read_counts %>% mutate(barcode=paste0(Sample,"-1")))
+
+table(is.na(df_reads))
+
+obj2[["reads_number"]]=df_reads$Count
+
+VlnPlot(obj2, features = "reads_number", ncol = 1) 
+ggsave(paste0(dir_objQC,"VlnPlot_readNumbers",".png"),height=6,width = 8,dpi=300)
+ggsave(paste0(dir_objQC,"VlnPlot_readNumbers",".pdf"),height=6,width = 8,dpi=300)
+
+write_tsv(get_cutoff(obj2,var_list = "reads_number"),paste0(dir_objQC,"df_readsnumber.tsv"))
+
+# 
+# df_reads_descending=df_reads %>% arrange(desc(Count)) %>% slice_head(n=floor(nrow(df_reads)*0.8))
+# 
+# obj2=subset(obj2,cells=df_reads_descending$barcode)
+
+#get BALL type ----------------
+# df_BALL_type=get_celltype_df(obj2,ref_BALL,top_variable_features_n = 3000)
+# 
+# table(df_BALL_type$barcode==row.names(obj2@meta.data))
+# 
+# obj2[["BALL"]]=df_BALL_type$pred_celltype
+# 
+# DimPlot(obj2,group.by = "BALL",cols=DiscretePalette(n=length(unique(df_BALL_type$pred_celltype))))
+# 
+# draw_Dimplot_class_percentage(obj2,var = "BALL",outfile = paste0(dir_objQC,"dimplot_BALL.png"),legend_insert_x = -0.4)
+
+#get cell type------------
+
+counts_obj2=as.matrix(GetAssayData(obj2[["RNA"]],slot="counts"))
+
+obj2_new=from_count2umap(counts_obj2)
+obj2_new=FindNeighbors(obj2_new)
+obj2_new=FindClusters(obj2_new,resolution = 2)
+
+
+singleR_out=run_singleR(obj2_new,mouse_ImmGenData,"cellType",top_variable_features_n=500,method="classic")
+
+
+obj2_new[["cellType"]]=singleR_out$df_singleR_out$pruned.labels
+
+DimPlot(obj2_new,group.by = "cellType",cols = cols_in[names(cols_in) %in% obj2$cellType],label = T,repel = T)
+ggsave(paste0(dir_objQC,SC_id,"_cellType",".png"),width=10,height = 10,dpi=300)
+ggsave(paste0(dir_objQC,SC_id,"_cellType",".pdf"),width=10,height = 10,dpi=300)
+
+
+
+obj2[["cellType_cluster"]]=singleR_out$df_singleR_out$pruned.labels_cluster
+DimPlot(obj2,group.by = "cellType_cluster",cols = cols_in[names(cols_in) %in% obj2$cellType_cluster],label = T,repel = T)
+
+
+saveRDS(obj2,paste0(dir_objQC,SC_id,"_QC",".rds"))
+saveRDS(singleR_out,paste0(dir_objQC,SC_id,"_singleR_celltype",".rds"))
+}
+
+
+
+#get cluster 
+obj2=get_clusters(obj2,dims = 1:50,k.param = 10,resolution = 1)
+
+draw_Dimplot_class_percentage(obj2,var = "seurat_clusters",outfile = paste0(dir_objQC,"dimplot_seuratClusters.png"),legend_insert_x = -0.45)
+
+table(obj2@meta.data$cellType,obj2@meta.data$seurat_clusters)
+
+sds=slingshot(Embeddings(obj2,"umap"),clusterLabels = obj2@meta.data$seurat_clusters)
+
+plot(Embeddings(obj2,"umap"))
+lines(SlingshotDataSet(sds),lwd=2,type="lineages",col="black")
+
+draw_Dimplot_class_withSlingshot_percentage(obj2,var = "seurat_clusters",sds = sds,legend_insert_x = -0.45,
+                                            outfile = paste0(dir_objQC,"dimplot_seuratClusters_slingshot.png"))
+
+draw_Dimplot_class_withSlingshot_percentage(obj2,var = "cellType",sds = sds,legend_insert_x = -0.45,
+                                            outfile = paste0(dir_objQC,"dimplot_cellType_slingshot.png"))
+
+#draw muation plot -------------
+df_mutation=read_tsv("4.mutation/4mouse/df_mutation.tsv") 
+
+SC_id="M0017"
+SC_id="M0018"
+SC_id="M0019"
+SC_id="M0021"
+
+dir_objRaw=paste0("1.obj_raw/",SC_id,"/")
+dir_objQC=paste0("2.obj_qc/",SC_id,"/")
+dir_mutPlot=paste0("4.mutation/",SC_id,"/")
+dir_vdjPlot=paste0("5.VDJ/",SC_id,"/")
+
+
+load(paste0(dir_objQC,"obj.rdata"))
+
+df_mutation1=df_mutation %>% mutate(
+  MAF_2=ifelse(total_CB<2,"NoCoverage",ifelse(MAF==0,"0",ifelse(MAF<=0.25,"0-0.25",ifelse(MAF<=0.5,"0.25-0.5",ifelse(MAF<=0.75,"0.5-0.75",ifelse(MAF<1,"0.75-1","1")))))),
+  MAF_5=ifelse(total_CB<5,"NoCoverage",ifelse(MAF==0,"0",ifelse(MAF<=0.25,"0-0.25",ifelse(MAF<=0.5,"0.25-0.5",ifelse(MAF<=0.75,"0.5-0.75",ifelse(MAF<1,"0.75-1","1")))))),
+  MAF_10=ifelse(total_CB<10,"NoCoverage",ifelse(MAF==0,"0",ifelse(MAF<=0.25,"0-0.25",ifelse(MAF<=0.5,"0.25-0.5",ifelse(MAF<=0.75,"0.5-0.75",ifelse(MAF<1,"0.75-1","1"))))))
+)
+
+df_barcode_mut=get_barcode_df(obj2) %>% left_join(df_mutation1)
+
+table(df_mutation1$MAF_2)
+table(df_mutation1$MAF_5)
+table(df_mutation1$MAF_10)
+
+obj2[["MAF_2"]]=df_barcode_mut$MAF_2
+obj2[["MAF_5"]]=df_barcode_mut$MAF_5
+obj2[["MAF_10"]]=df_barcode_mut$MAF_10
+
+p1=FeaturePlot(obj2,features = "Pax5") + ggtitle(paste0(SC_id,": ","Expression of Pax5"))
+p2=DimPlot(obj2,group.by = "MAF_2",cols=unique(subtypeCol)[1:6]) + ggtitle(paste0(SC_id,": ","MAF of Pax5.P80R\nNoCoverage:Total Count <2"))
+p3=DimPlot(obj2,group.by = "MAF_5",cols=unique(subtypeCol)[1:6]) + ggtitle(paste0(SC_id,": ","MAF of Pax5.P80R\nNoCoverage:Total Count <5"))
+p4=DimPlot(obj2,group.by = "MAF_10",cols=unique(subtypeCol)[1:6]) + ggtitle(paste0(SC_id,": ","MAF of Pax5.P80R\nNoCoverage:Total Count <10"))
+
+ggarrange(p1,p2,p3,p4,common.legend = F)
+
+ggsave(paste0(dir_mutPlot,"Mutation_Pax5.P80R",".png"),height=12,width = 14,dpi=300)
+
+table(obj2$MAF_2)
+table(obj2$MAF_5)
+table(obj2$MAF_10)
+
+
+#draw vdj plot -------------
+
+list_vdj=get_vdjtop(get_barcode_df(obj2),read.csv("0.data_raw/COHSC000001/VDJ/all_contig_annotations.csv",stringsAsFactors = F))
+
+df_vdj=list_vdj$df_barcode_vdj 
+df_freq=as.data.frame(table(df_vdj$cdr3)) 
+
+cdr3_keep_m17=c("CALLLWYDYW+CGQSYSYPLTF","CALLLWYDYW+CWQGTHFPLTF","CALLLWYDYW+CGQSYSYPLTF")
+cdr3_top1_m17=c("CALLLWYDYW")
+
+cdr3_keep_m18=c("CARWGTHYYGSRGKLYFDYW+CQHSWEIPLTF+CQQYWSTPLTF","CARWGTHYYGSRGKLYFDYW+CQHSWEIPLTF","CARWGTHYYGSRGKLYFDYW+CQQYWSTPLTF")
+cdr3_top1_m18=c("CARWGTHYYGSRGKLYFDYW")
+
+cdr3_keep_m19=c("CARRGGYPFDYW","CARRGGYPFDYW+CQQWSSYPHTPTF","CARRGGYPFDYW+CQQGSSILLFTF")
+cdr3_top1_m19=c("CARRGGYPFDYW")
+
+cdr3_keep_m21=c("CQHSWEIPLTF","CARWGTHYYGSRGKLYFDYW","CWQGTHFPLTF","CALLLWYDYW")
+cdr3_top1_m21=c("CQHSWEIPLTF")
+
+df_vdj1 =df_vdj %>%
+  mutate(cdr3_new=ifelse(cdr3 %in% cdr3_keep_m21,cdr3,"Other_BCR"),
+         cdr3_new=ifelse(cdr3_new=="Other_BCR" & grepl(cdr3_top1_m21,cdr3),paste0(cdr3_top1_m21,"+Others"),cdr3_new),
+         cdr3_new=ifelse(is.na(cdr3),"NoBCR",cdr3_new))
+
+write_tsv(df_vdj1,paste0(dir_vdjPlot,"df_vdj",".tsv"))
+
+
+df_freq1=as.data.frame(table(df_vdj1$cdr3_new))  %>%  arrange(desc(Var1)) %>%
+  mutate(
+    n=1:n(),
+    label=paste0(Var1,", N=",Freq))
+
+plottitle=paste0(df_freq1$label,collapse = "\n")
+
+obj2[['vdj']]=df_vdj1$cdr3_new
+
+
+DimPlot(obj2,group.by = "vdj",cols=unique(subtypeCol)[1:8]) + 
+  ggtitle(plottitle)
+
+ggsave(paste0(dir_vdjPlot,"vdj_cellrange",".png"),height=8,width = 15,dpi=300)
+ggsave(paste0(dir_vdjPlot,"vdj_cellrange",".pdf"),height=8,width = 15,dpi=300)
+
+
+p1=DimPlot(obj2,group.by = "cellType",cols=unique(subtypeCol)[1:length(unique(obj2$cellType))],label = T)
+p2=DimPlot(obj2,group.by = "vdj",cols=unique(subtypeCol)[1:8],label=T) + ggtitle(plottitle)
+p1+p2
+ggsave(paste0(dir_vdjPlot,"vdj_cellType",".png"),height=8,width = 15,dpi=300)
+ggsave(paste0(dir_vdjPlot,"vdj_cellType",".pdf"),height=8,width = 15,dpi=300)
+
+p1=DimPlot(obj2,group.by = "cellType",cols=unique(subtypeCol)[1:length(unique(obj2$cellType))])
+p2=DimPlot(obj2,group.by = "vdj",cols=unique(subtypeCol)[1:8]) + ggtitle(plottitle)
+p1+p2
+ggsave(paste0(dir_vdjPlot,"vdj_cellType_noLabel",".png"),height=8,width = 15,dpi=300)
+ggsave(paste0(dir_vdjPlot,"vdj_cellType_noLabel",".pdf"),height=8,width = 15,dpi=300)
+
+
+VlnPlot(obj2, features = "nFeature_RNA", ncol = 1,group.by = "vdj")+ theme(legend.position = "none")
+VlnPlot(obj2, features = "nCount_RNA", ncol = 1,group.by = "vdj")+ theme(legend.position = "none")
+
+df_umap=get_embedding_df(obj2,"umap") %>% left_join(df_vdj1) %>% left_join(df_celltype)
+write_tsv(df_umap,paste0(dir_vdjPlot,"df_umap_celltype_vdj.tsv"))
+
+df_freq_cdr3=as.data.frame(table(df_umap$cdr3_new,df_umap$pred_celltype)) %>%
+  mutate(Var1=as.character(Var1),Var2=as.character(Var2)) %>% 
+  mutate(Btype=word(Var2,2,sep="[()]"),
+         Btype=ifelse(is.na(Btype),Var2,Btype))
+
+head(df_freq_cdr3)
+df_freq_cdr3_1=dcast(df_freq_cdr3,Var1~Btype,value.var = "Freq") %>% 
+  left_join(as.data.frame(table(df_umap$cdr3_new)) %>% mutate(Var1=as.character(Var1))) %>%
+  mutate(percentage_FrC=paste0(sprintf("%.1f",100*PREB.FRC/Freq),"%"),
+         percentage_FrBC=paste0(sprintf("%.1f",100*PROB.FRBC/Freq),"%"),
+         )
+
+write_tsv(df_freq_cdr3_1,paste0(dir_vdjPlot,"count_celltype_vdjClone",".tsv"))
+
+save(obj2,file=paste0(dir_objQC,"obj.rdata"))
+

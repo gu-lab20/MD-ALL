@@ -1,0 +1,32 @@
+{
+    "id": "0A39B94D",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1667602261779.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "expression": "count_gene_234",
+        "caption": "count_gene_234",
+        "totalObservations": 60616,
+        "displayedObservations": 60616,
+        "variables": 235,
+        "cacheKey": "8CF4C01F",
+        "object": "count_gene_234",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=count_gene_234&cache_key=8CF4C01F&max_cols=50",
+        "preview": 0
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2318265515781545829,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1667602261779,
+    "read_only": false,
+    "read_only_alternatives": []
+}

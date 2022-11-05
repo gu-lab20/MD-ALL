@@ -1,0 +1,120 @@
+#load functions ----------------
+gc(rm(list=ls()))
+gulab="//isi-dcnl/user_data/zgu_grp/";
+setwd(gulab)
+source("DryLab/bin/zuhu/R/singlecell/F_sc.R")
+
+#load working dir ------------------------------------------------------------
+setwd("C:/Users/zuhu/OneDrive - City of Hope National Medical Center/project/ZGu/singlecell_BALL/1.obj_raw/")
+
+
+set.seed(123456789)
+folder_exp="../0.data_raw/COHSC000002/Expression/filtered_feature_bc_matrix/"
+
+#read pax5 --------------
+dir.create("1human")
+obj_=create_seurat_object(folder_exp,"PAX5",5,200)
+
+#run sc analusis 
+
+obj_=add_qc_measurements(obj_)
+
+obj_=from_normalization2umap(obj_)
+
+DimPlot(obj_)
+
+obj_ = CellCycleScoring(object = obj_, s.features = s.genes_human, g2m.features = g2m.genes_human)
+
+dev.off() 
+
+draw_VlnPlot_qc(obj_,"1human/VlnPlot_qc")
+draw_correlationPlot_qc(obj_,outfile_prefix="1human/correlationPlot_qc")
+draw_Dimplot_qc(obj_,outfile_prefix="1human/umap_qc")
+
+save(obj_,file="1human/obj_24118cells.rdata")
+
+load("1human/obj_24118cells.rdata")
+
+#get subset ------------------
+df_reads=read_tsv("../0.data_raw/COHSC000002/COHSC000002_Expression1.splitfq_cell.log") %>% 
+  arrange(desc(Count)) %>% filter(!Sample=="unmatched") %>% slice_head(n=15000)
+
+outdir="../2.obj_qc/1human_filtered_top15000cells/"
+
+
+obj1=subset(obj_,cells=paste0(df_reads$Barcode1,"-1"))
+
+df_cutoff=get_cutoff(obj1)
+
+obj2=subset(obj1,nCount_RNA<df_cutoff$medianAdd3MAD[df_cutoff$var=="nCount_RNA"] & 
+              nFeature_RNA < df_cutoff$medianAdd3MAD[df_cutoff$var=="nFeature_RNA"] & 
+              percent.mt < 5 & 
+              percent.ribosomal >10
+            )
+
+
+obj2=add_qc_measurements(obj2)
+
+obj2=from_normalization2umap(obj2)
+
+obj2 = CellCycleScoring(object = obj2, s.features = s.genes_human, g2m.features = g2m.genes_human)
+
+DimPlot(obj2)
+
+
+draw_VlnPlot_qc(obj2,paste0(outdir,"VlnPlot_qc"))
+draw_correlationPlot_qc(obj2,outfile_prefix=paste0(outdir,"correlationPlot_qc"))
+draw_Dimplot_qc(obj2,outfile_prefix=paste0(outdir,"umap_qc"))
+
+#get BALL type
+load("//isi-dcnl/user_data/zgu_grp/DryLab/bin/zuhu/R/singlecell/ref_celltype/human/ref_BALL.rdata")
+df_BALL_type=get_celltype_df(obj2,ref_BALL)
+
+table(df_BALL_type$barcode==row.names(obj1@meta.data))
+
+
+obj2[["BALL"]]=df_BALL_type$pred_celltype
+
+draw_Dimplot_class_percentage(obj2,var = "BALL",outfile = paste0(outdir,"dimplot_BALL.png"),legend_insert_x = -0.4)
+
+DimPlot(obj2,group.by = "BALL",cols=DiscretePalette(n=length(unique(df_BALL_type$pred_celltype))))
+
+#get cell type
+load("//isi-dcnl/user_data/zgu_grp/DryLab/bin/zuhu/R/singlecell/ref_celltype/human/ref_BLineage.rdata")
+load("//isi-dcnl/user_data/zgu_grp/DryLab/bin/zuhu/R/singlecell/ref_celltype/human/human_HC_211.rdata")
+load("//isi-dcnl/user_data/zgu_grp/DryLab/bin/zuhu/R/singlecell/ref_celltype/human/hpca.se.rdata")
+
+df_celltype=get_celltype_df(obj2,ref_BLineage)
+obj2[["BLineage"]]=df_celltype$pred_celltype
+draw_Dimplot_class_percentage(obj2,var = "BLineage",outfile = paste0(outdir,"dimplot_Blineage.png"),legend_insert_x = -0.4)
+
+df_type_HC211=get_celltype_df(obj2,human_HC_211)
+obj2[["type_HC211"]]=df_type_HC211$pred_celltype
+draw_Dimplot_class_percentage(obj2,var = "type_HC211",outfile = paste0(outdir,"dimplot_typeHC211.png"),legend_insert_x = -0.45)
+
+table(obj2@meta.data$BALL,obj2@meta.data$BLineage)
+table(obj2@meta.data$BALL,obj2@meta.data$type_HC211)
+
+#get cluster 
+obj2=get_clusters(obj2,dims = 1:50,k.param = 10,resolution = 1)
+
+draw_Dimplot_class_percentage(obj2,var = "seurat_clusters",outfile = paste0(outdir,"dimplot_seuratClusters.png"),legend_insert_x = -0.45)
+
+table(obj2@meta.data$BALL,obj2@meta.data$seurat_clusters)
+table(obj2@meta.data$BLineage,obj2@meta.data$seurat_clusters)
+table(obj2@meta.data$type_HC211,obj2@meta.data$seurat_clusters)
+
+sds=slingshot(Embeddings(obj2,"umap"),clusterLabels = obj2@meta.data$seurat_clusters)
+
+plot(Embeddings(obj2,"umap"))
+lines(SlingshotDataSet(sds),lwd=2,type="lineages",col="black")
+
+draw_Dimplot_class_withSlingshot_percentage(obj2,var = "seurat_clusters",sds = sds,legend_insert_x = -0.45,
+                                            outfile = paste0(outdir,"dimplot_seuratClusters_slingshot.png"))
+
+draw_Dimplot_class_withSlingshot_percentage(obj2,var = "BALL",sds = sds,legend_insert_x = -0.45,
+                                            outfile = paste0(outdir,"dimplot_BALL_slingshot.png"))
+
+
+save(obj2,file=paste0(outdir,"obj.rdata"))
+

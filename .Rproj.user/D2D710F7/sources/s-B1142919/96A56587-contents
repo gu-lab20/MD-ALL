@@ -1,0 +1,6 @@
+# Load raw count of 234 reference data for normalization
+HTSeqCount_gene_234 = readRDS("data-raw/HTSeqCount_gene_234.rds")
+usethis::use_data(HTSeqCount_gene_234, overwrite = TRUE)
+
+
+

@@ -1,0 +1,23 @@
+Package: MDALL
+Type: Package
+Title: A package for molecular diagnosis of acute lymphoblastic leukemia subtypes based on bulk-RNAseq data.
+Version: 1.0
+Authors@R: 
+    person(given = "Zunsong",
+           family = "Hu",
+           role = c("aut", "cre"),
+           email = "zuhu@coh.org")
+Maintainer: Zunsong Hu <zuhu@coh.org>
+Description: This package was created in order to do the subtype prediction based on bulk-RNAseq data.
+License: What license is it under
+Encoding: UTF-8
+LazyData: true
+Depends:
+  R (>= 3.1)
+Imports:
+  shiny,
+	tidyr,
+	dplyr,
+	ggplot2,
+	stringr
+RoxygenNote: 7.1.1

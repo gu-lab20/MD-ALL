@@ -1,0 +1,80 @@
+#load functions ----------------
+gc(rm(list=ls()))
+gulab="//isi-dcnl/user_data/zgu_grp/";
+setwd(gulab)
+source("DryLab/bin/zuhu/R/singlecell/F_sc.R")
+
+#load working dir ------------------------------------------------------------
+setwd("C:/Users/zuhu/OneDrive - City of Hope National Medical Center/project/ZGu/singlecell_PAX5/")
+
+load("../singelcell_ref/celldex/mouse/mouse_ImmGenData.rdata")
+cols_in=DiscretePalette(length(unique(mouse_ImmGenData$cellType)))
+names(cols_in)=unique(mouse_ImmGenData$cellType)
+
+SC_id_list=c("M0017","M0018","M0019","M0021")
+
+SC_id="M0017"
+SC_id="M0018"
+SC_id="M0019"
+SC_id="M0021"
+
+outdir="6.celltype/SingleR_onLogNormalization/"
+dir.create(outdir)
+for(SC_id in SC_id_list){
+  
+  load(paste0("2.obj_qc/",SC_id,"/obj.rdata"))
+  
+  # DimPlot(obj2)
+  # 
+  # 
+  # 
+  # out_singleR=run_singleR(obj2,mouse_ImmGenData,"cellType",top_variable_features_n=3000,method="classic")
+  # 
+  # obj2[["cellType"]]=out_singleR$df_singleR_out$pruned.labels
+  # 
+  # DimPlot(obj2,group.by = "cellType",label = T,repel = T,cols=cols_in[names(cols_in) %in% obj2$cellType])
+  # 
+  # dev.off()
+  
+  #test sct ---------
+  df_matrix=as.matrix(GetAssayData(obj2[["RNA"]],slot="counts"))
+  
+  # obj_=CreateSeuratObject(df_matrix)
+  
+  
+  # obj_=SCTransform2cluster(obj_,resolution = 2,n_pc = 50,variable.features.n = 5000)
+  
+  obj_=from_count2umap(df_matrix)
+  obj_=FindNeighbors(obj_)
+  obj_=FindClusters(obj_,resolution = 2)
+  
+  obj_[["group"]]=SC_id
+  
+  out_singleR_new=run_singleR(obj_,mouse_ImmGenData,"cellType",top_variable_features_n=3000,method="classic")
+  
+  obj_[["cellType"]]=out_singleR_new$df_singleR_out$pruned.labels
+  
+  DimPlot(obj_,group.by = "cellType",label = T,repel = T,cols=cols_in[names(cols_in) %in% obj2$cellType])
+  
+  ggsave(paste0(outdir,SC_id,"_cellType",".png"),width = 12,height = 10,dpi=300)
+  ggsave(paste0(outdir,SC_id,"_cellType",".pdf"),width = 13,height = 10,dpi=300)
+  
+  saveRDS(obj_,paste0(outdir,SC_id,"_QC",".rds"))
+  saveRDS(out_singleR_new,paste0(outdir,SC_id,"_singleR_celltype",".rds"))
+}
+
+NormalizeData()
+
+
+#test normal transform ----------------
+
+
+df1=as.matrix(GetAssayData(obj2[["RNA"]],slot="counts"))
+df2=as.matrix(GetAssayData(obj_[["RNA"]],slot="counts"))
+
+colnames(df1)[1:10]==colnames(df2)[1:10]
+
+
+
+
+
