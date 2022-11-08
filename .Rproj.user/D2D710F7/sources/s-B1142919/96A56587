@@ -5,13 +5,13 @@
     "type": "r_source",
     "hash": "0",
     "contents": "",
-    "dirty": false,
+    "dirty": true,
     "created": 1667602911326.0,
     "source_on_save": false,
     "relative_order": 8,
     "properties": {
         "tempName": "Untitled2",
-        "cursorPosition": "0,0",
+        "cursorPosition": "6,0",
         "scrollLine": "0"
     },
     "folds": "",
