@@ -16,8 +16,7 @@ knitr::opts_chunk$set(
 # MD-ALL 
 #### Molecular Diagnosis of Acute Lymphoblastic Leukemia
 
-<!-- badges: start -->
-<!-- badges: end -->
+<br>
 
 
 ## Installation
@@ -27,6 +26,11 @@ You can install the released version of MD-ALL from [github](https://github.com/
 ``` r
 devtools::install_github("gu-lab20/MD-ALL")
 ```
+
+| Type        | Command                                             |
+|-------------|-----------------------------------------------------|
+| Development | `remotes::install_github("XikunHan/metabolomicsR")` |
+
 
 ## Example
 
@@ -39,7 +43,7 @@ library(MDALL)
 
 
 
-
+##### Seamless workflow to preprocess, analyze, and visualize metabolomics data in metabolomicsR <img src="man/figures/README-pressure-1.png" align="center" width="120%" height="180%"/>
 
 
 

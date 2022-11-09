@@ -19,5 +19,6 @@ Imports:
 	tidyr,
 	dplyr,
 	ggplot2,
-	stringr
+	stringr,
+	SummarizedExperiment
 RoxygenNote: 7.1.1

@@ -5,9 +5,7 @@
 
 #### Molecular Diagnosis of Acute Lymphoblastic Leukemia
 
-<!-- badges: start -->
-
-<!-- badges: end -->
+<br>
 
 ## Installation
 
@@ -18,6 +16,10 @@ You can install the released version of MD-ALL from
 devtools::install_github("gu-lab20/MD-ALL")
 ```
 
+| Type        | Command                                             |
+| ----------- | --------------------------------------------------- |
+| Development | `remotes::install_github("XikunHan/metabolomicsR")` |
+
 ## Example
 
 Basic example
@@ -26,3 +28,5 @@ Basic example
 library(MDALL)
 ## basic example code
 ```
+
+##### Seamless workflow to preprocess, analyze, and visualize metabolomics data in metabolomicsR <img src="man/figures/README-pressure-1.png" align="center" width="120%" height="180%"/>
