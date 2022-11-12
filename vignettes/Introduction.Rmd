@@ -1,0 +1,87 @@
+---
+title: "MD-ALL Introduction"
+author: "Zunsong Hu"
+date: "11/8/2022"
+package: MDALL
+output: html_document
+vignette: >
+  %\VignetteIndexEntry{An introduction to the MD-ALL}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<strong>MD-ALL</strong> is an R package used to do ALL subtyping based on bulk-RNAseq data.
+
+## Load required library
+```{r loading packages,message=FALSE,warning=FALSE,error=FALSE}
+library(MDALL)
+library(dplyr)
+library(Rtsne)
+library(ggplot2)
+library(ggrepel)
+library(umap)
+library(Rphenograph)
+library(SummarizedExperiment)
+```
+
+## Import data
+The count data can be imported directory from a txt file, separated by space, tab or common. 
+The HTSeqCount generated gene level count are accepted for now. Later we will add the support for featureCounts.
+The ENSG id should be used as the gene name.
+
+```{r}
+df_count=read_input("../tests/test.HTSeqCount",delimiter = "\t",header = F)
+dim(df_count)
+head(df_count)
+tail(df_count)
+```
+
+## Normalization
+Normalization with reference data
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
+dim(df_vst)
+head(df_vst)
+tail(df_vst)
+```
+
+## Add testing sample to reference dataset for subtype prediction
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=obj_merge(obj_in = obj_2042_HTSeq,df_in = df_vst,assay_name_in = "vst")
+```
+
+## Run tSNE
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=run_tsne(obj_in = obj_,out_label = "tsne",feature_panel = "boruta_genes")
+```
+
+## Draw tSNE plot
+```{r,fig.width=9,fig.height=8}
+p1=draw_DimPlot(obj_,group.by = "diag",reduction = "tsne",highlightLevel = "TestSample")
+p1
+```
+
+##Run uMAP
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=run_umap(obj_in = obj_,out_label = "umap",n_neighbors = 30,variable_n = 800,feature_panel = "boruta_genes")
+```
+
+## Draw uMAP plot
+```{r,fig.width=9,fig.height=8}
+p2=draw_DimPlot(obj_,group.by = "diag",reduction = "umap",highlightLevel = "TestSample")
+p2
+```
+
+## Run PhenoGraph Clustering
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=run_PhenoGraph(obj_in = obj_,feature_panel = "boruta_genes",variable_n = 200,neighbor_k = 10)
+```
+```{r}
+get_PhenoGraphPred(obj_)
+```
+

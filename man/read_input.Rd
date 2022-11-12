@@ -4,7 +4,7 @@
 \alias{read_input}
 \title{read_input}
 \usage{
-read_input(file, delimiter = "\\t", header = F)
+read_input(file, delimiter = "\\t", header = F, count_field_num = 2)
 }
 \arguments{
 \item{file, }{String, Input file name}
@@ -12,6 +12,8 @@ read_input(file, delimiter = "\\t", header = F)
 \item{delimiter, }{String, delimiter}
 
 \item{header, }{Logical, if using the first line as header}
+
+\item{count_field_num, }{num, num of count column in the file}
 }
 \value{
 

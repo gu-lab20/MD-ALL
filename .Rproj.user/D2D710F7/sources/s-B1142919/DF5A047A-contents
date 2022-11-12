@@ -20,5 +20,9 @@ Imports:
 	dplyr,
 	ggplot2,
 	stringr,
+	umap,
+	Rphenograph,
+	shinydashboard,
+	shiny,
 	SummarizedExperiment
 RoxygenNote: 7.1.1

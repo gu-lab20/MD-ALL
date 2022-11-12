@@ -1,0 +1,90 @@
+---
+title: "MDALL_ShinyApp"
+author: "Zunsong Hu"
+date: "11/9/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## ShinyAPP
+```{r loading packages,message=FALSE,warning=FALSE,error=FALSE}
+library(MDALL)
+library(dplyr)
+library(Rtsne)
+library(ggplot2)
+library(ggrepel)
+library(umap)
+library(Rphenograph)
+library(SummarizedExperiment)
+library(shiny)
+library(shinydashboard)
+```
+
+```{r}
+shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
