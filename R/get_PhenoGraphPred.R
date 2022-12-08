@@ -13,9 +13,9 @@ get_PhenoGraphPred=function(obj_in,panelName="PhenographPred",SampleLevel="TestS
   df_phenograph=obj_in[[panelName]]
   df_out=df_phenograph[df_phenograph$COH_sample %in% c(SampleLevel),]
 
-  value_out=paste0("PhenoGraph Clustering Labeled Subtype:",df_out$diag_pred,
+  value_out=paste0("PhenoGraph Clustering Labeled Subtype: ",df_out$diag_pred,
                    " (FeatureN=",df_out$FeatureN,"; NeighborN=",df_out$top_neighborN,")")
-  if(type=="value"){out=value_out}
-  if(tolower(type) %in% c("df","dataframe")){out=df_out}
-  out
+  # if(type=="value"){out=value_out}
+  # if(tolower(type) %in% c("df","dataframe")){out=df_out}
+  return(list(df=df_out,value=value_out))
 }

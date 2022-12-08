@@ -1,0 +1,47 @@
+---
+title: "RNAseqCNV"
+author: "Zunsong"
+date: "11/30/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(ggpubr)
+library(MDALL)
+```
+
+
+
+```{r Parameters}
+library(MDALL)
+```
+
+
+```{r Assign reference data}
+rm(list=ls())
+```
+
+```{r readCount}
+df_count=read_input("../tests/test.HTSeqCount",delimiter = "\t",header = F)
+
+```
+
+
+```{r}
+
+RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = "../tests/test.HaplotypeCaller.vcf")
+
+```
+
+```{r, fig.width=20,fig.height=10}
+get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out)
+```
+
+

@@ -8,7 +8,7 @@
 #' @export get_vst_values
 #'
 #' @examples
-get_vst_values=function(obj_in=NULL,file_obj=NULL,df_count){
+get_vst_values=function(obj_in=NULL,file_obj=NULL,df_count,out_fmt="df"){
 
   obj_x=obj_merge(obj_in=obj_in,file_obj = file_obj,df_in = df_count,assay_name_in = "counts")
 
@@ -19,6 +19,13 @@ get_vst_values=function(obj_in=NULL,file_obj=NULL,df_count){
 
   df_vst_out=df_vst[c("feature",names(df_count)[2:ncol(df_count)])] %>% arrange(feature)
 
-  df_vst_out
+  if(out_fmt=="df"){
+  out=df_vst_out
+  }
+
+  if(out_fmt=="obj"){
+    out=obj_x
+  }
+  out
 }
 

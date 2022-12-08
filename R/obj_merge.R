@@ -15,6 +15,7 @@ obj_merge=function(obj_in=NULL,file_obj=NULL,df_in,assay_name_in="vst"){
   }
   #get obj count data
   count_ref=assays(obj_in$SE)[[assay_name_in]]
+  count_ref=as.data.frame(count_ref)
   count_ref$feature=row.names(count_ref)
 
   #get merged count data
@@ -53,3 +54,4 @@ obj_merge=function(obj_in=NULL,file_obj=NULL,df_in,assay_name_in="vst"){
   }
   obj_out
 }
+# obj_in=obj_234_HTSeq

@@ -19,10 +19,17 @@ Imports:
 	tidyr,
 	dplyr,
 	ggplot2,
+	ggrepel,
 	stringr,
+	DESeq2,
+	irlba,
+	Rtsne,
 	umap,
+	igraph,
 	Rphenograph,
 	shinydashboard,
 	shiny,
-	SummarizedExperiment
+	SummarizedExperiment,
+	data.table,
+	caret
 RoxygenNote: 7.1.1

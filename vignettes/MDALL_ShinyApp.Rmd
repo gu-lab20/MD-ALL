@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## ShinyAPP
 ```{r loading packages,message=FALSE,warning=FALSE,error=FALSE}
-library(MDALL)
 library(dplyr)
 library(Rtsne)
 library(ggplot2)
@@ -23,11 +22,11 @@ library(Rphenograph)
 library(SummarizedExperiment)
 library(shiny)
 library(shinydashboard)
+library(MDALL)
 ```
 
 ```{r}
 shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
-
 ```
 
 

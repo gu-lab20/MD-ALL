@@ -26,14 +26,16 @@ You can install the released version of MD-ALL from [github](https://github.com/
 
 ## Load required library
 ```{r loading packages,message=FALSE,warning=FALSE,error=FALSE}
-library(MDALL)
 library(dplyr)
+library(stringr)
 library(Rtsne)
 library(ggplot2)
 library(ggrepel)
+library(ggpubr)
 library(umap)
 library(Rphenograph)
 library(SummarizedExperiment)
+library(MDALL)
 ```
 
 ## Import data
@@ -41,11 +43,10 @@ The count data can be imported directory from a txt file, separated by space, ta
 The HTSeqCount generated gene level count are accepted for now. Later we will add the support for featureCounts.
 The ENSG id should be used as the gene name.
 
-```{r}
-df_count=read_input("tests/test.HTSeqCount",delimiter = "\t",header = F)
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+df_count=read_input("tests/Hyperdiploid.HTSeq",delimiter = "\t",header = F)
 dim(df_count)
 head(df_count)
-tail(df_count)
 ```
 
 ## Normalization
@@ -55,7 +56,18 @@ Normalization with reference data
 df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
 dim(df_vst)
 head(df_vst)
-tail(df_vst)
+```
+
+## Get gene expression box plot
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_boxplot=obj_merge(obj_in = obj_234_HTSeq,df_in = df_vst,assay_name_in = "vst")
+draw_BoxPlot(obj_in = obj_boxplot,group.by = "diag",features = "CRLF2",highlightLevel = "TestSample")
+```
+
+## Get normalized expression values for feature genes
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+get_geneExpression(df_vst = df_vst,genes = c("CDX2","CRLF2","DUX4"))
 ```
 
 ## Add testing sample to reference dataset for subtype prediction
@@ -66,39 +78,67 @@ obj_=obj_merge(obj_in = obj_2042_HTSeq,df_in = df_vst,assay_name_in = "vst")
 ## Run tSNE
 ```{r,message=FALSE,warning=FALSE,error=FALSE}
 obj_=run_tsne(obj_in = obj_,out_label = "tsne",feature_panel = "boruta_genes")
+
+df_tsne=get_embeding_feature(obj_in = obj_,features = c("diag"))
+knn_pred_one(indata = df_tsne,var_y = "diag", var_x = c("tSNE_1","tSNE_2"))[which(df_tsne$diag=="TestSample")]
 ```
 
 ## Draw tSNE plot
 ```{r,fig.width=9,fig.height=8}
-p1=draw_DimPlot(obj_,group.by = "diag",reduction = "tsne",highlightLevel = "TestSample")
-p1
+draw_DimPlot(obj_,group.by = "diag",reduction = "tsne",highlightLevel = "TestSample")
 ```
 
-##Run uMAP
+## Run uMAP
 ```{r,message=FALSE,warning=FALSE,error=FALSE}
 obj_=run_umap(obj_in = obj_,out_label = "umap",n_neighbors = 30,variable_n = 800,feature_panel = "boruta_genes")
+
+df_umap=get_embeding_feature(obj_in = obj_,features = c("diag"),reduction = "umap")
+knn_pred_one(indata = df_umap,var_y = "diag", var_x = c("uMAP_1","uMAP_2"))[which(df_tsne$diag=="TestSample")]
 ```
 
 ## Draw uMAP plot
 ```{r,fig.width=9,fig.height=8}
-p2=draw_DimPlot(obj_,group.by = "diag",reduction = "umap",highlightLevel = "TestSample")
-p2
+draw_DimPlot(obj_,group.by = "diag",reduction = "umap",highlightLevel = "TestSample")
 ```
 
-## Run PhenoGraph Clustering
+## Run PhenoGraph clustering
 ```{r,message=FALSE,warning=FALSE,error=FALSE}
 obj_=run_PhenoGraph(obj_in = obj_,feature_panel = "boruta_genes",variable_n = 800,neighbor_k = 30)
-```
-```{r}
-get_PhenoGraphPred(obj_)
-```
 
-## Load ShinyApp
-```{r}
-
+get_PhenoGraphPred(obj_)$value
 ```
 
+## Run RNAseqCNV
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = "tests/Hyperdiploid.vcf")
+RNAseqCNV_out$df_cnv_out
+```
 
+## Draw RNAseqCNV Plot
+```{r, fig.width=20,fig.height=10}
+get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out)
+```
+
+## Get mutations
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+out_mutation=get_BALL_mutation("tests/Hyperdiploid.vcf")
+
+out_mutation$out_text_BALLmutation
+```
+
+## Get fusions called by FuisonCatcher
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+get_BALL_fusion("tests/iAMP21.fusioncatcher",type = "fc")
+
+```
+
+## Get fusions called by Cicero
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+get_BALL_fusion("tests/iAMP21.cicero",type = "c")
+
+```
+## Use ShinyApp
+#### shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
 
 
 

@@ -4,7 +4,7 @@
 \alias{get_vst_values}
 \title{get_vst_values}
 \usage{
-get_vst_values(obj_in = NULL, file_obj = NULL, df_count)
+get_vst_values(obj_in = NULL, file_obj = NULL, df_count, out_fmt = "df")
 }
 \arguments{
 \item{obj_in}{, object, object of reference}
