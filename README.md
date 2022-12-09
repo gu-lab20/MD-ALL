@@ -20,14 +20,20 @@ You can install the released version of MD-ALL from
 library(dplyr)
 library(stringr)
 library(Rtsne)
+library(umap)
+library(Rphenograph)
 library(ggplot2)
 library(ggrepel)
 library(ggpubr)
-library(umap)
-library(Rphenograph)
 library(SummarizedExperiment)
+library(shiny)
+library(shinydashboard)
 library(MDALL)
 ```
+
+## Use ShinyApp
+
+#### shinyApp(ui=shinyApp\_ui(),server=shinyApp\_server)
 
 ## Import data
 
@@ -137,10 +143,10 @@ draw_DimPlot(obj_,group.by = "diag",reduction = "umap",highlightLevel = "TestSam
 ``` r
 obj_=run_PhenoGraph(obj_in = obj_,feature_panel = "boruta_genes",variable_n = 800,neighbor_k = 30)
 #> Run Phenograph: Used Feature N= 800 ; Used Sample N= 2043 ; Neighbor_k= 30 
-#>   Finding nearest neighbors...DONE ~ 2.97 s
-#>   Compute jaccard coefficient between nearest-neighbor sets...DONE ~ 0.85 s
+#>   Finding nearest neighbors...DONE ~ 2.91 s
+#>   Compute jaccard coefficient between nearest-neighbor sets...DONE ~ 0.86 s
 #>   Build undirected graph from the weighted links...DONE ~ 0.25 s
-#>   Run louvain clustering on the graph ...DONE ~ 0.08 s
+#>   Run louvain clustering on the graph ...DONE ~ 0.06 s
 #>   Return a community class
 #>   -Modularity value: 0.9039955 
 #>   -Number of clusters: 15
@@ -224,7 +230,3 @@ get_BALL_fusion("tests/iAMP21.cicero",type = "c")
 #> 10 USH2A::CRLF2      0      4 CRLF2         Ph-like            featured fusion  
 #> # ... with 1 more variable: ConfidenceToRelatedSubtype <chr>
 ```
-
-## Use ShinyApp
-
-#### shinyApp(ui=shinyApp\_ui(),server=shinyApp\_server)

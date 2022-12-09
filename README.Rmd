@@ -29,14 +29,19 @@ You can install the released version of MD-ALL from [github](https://github.com/
 library(dplyr)
 library(stringr)
 library(Rtsne)
+library(umap)
+library(Rphenograph)
 library(ggplot2)
 library(ggrepel)
 library(ggpubr)
-library(umap)
-library(Rphenograph)
 library(SummarizedExperiment)
+library(shiny)
+library(shinydashboard)
 library(MDALL)
 ```
+
+## Use ShinyApp
+#### shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
 
 ## Import data
 The count data can be imported directory from a txt file, separated by space, tab or common. 
@@ -137,8 +142,6 @@ get_BALL_fusion("tests/iAMP21.fusioncatcher",type = "fc")
 get_BALL_fusion("tests/iAMP21.cicero",type = "c")
 
 ```
-## Use ShinyApp
-#### shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
 
 
 

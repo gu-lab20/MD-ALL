@@ -15,21 +15,21 @@ LazyData: true
 Depends:
   R (>= 3.1)
 Imports:
-  shiny,
 	tidyr,
 	dplyr,
+	stringr,
 	ggplot2,
 	ggrepel,
-	stringr,
+	ggpubr,
+	caret,
 	DESeq2,
-	irlba,
-	Rtsne,
-	umap,
-	igraph,
-	Rphenograph,
-	shinydashboard,
-	shiny,
 	SummarizedExperiment,
-	data.table,
-	caret
+	irlba,
+	igraph,
+	umap,
+	Rtsne,
+	Rphenograph,
+	shiny,
+	shinydashboard,
+	data.table
 RoxygenNote: 7.1.1
