@@ -31,5 +31,6 @@ Imports:
 	Rphenograph,
 	shiny,
 	shinydashboard,
-	data.table
+	data.table,
+	randomForest
 RoxygenNote: 7.1.1

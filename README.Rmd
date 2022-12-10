@@ -17,6 +17,14 @@ knitr::opts_chunk$set(
 #### Molecular Diagnosis of Acute Lymphoblastic Leukemia
 
 ## Installation
+### Install required packages
+Install DEseq2
+BiocManager::install("DESeq2")
+
+Install Rphenograph
+devtools::install_github("JinmiaoChenLab/Rphenograph")
+
+### Install MD-ALL
 You can install the released version of MD-ALL from [github](https://github.com/gu-lab20/MD-ALL).
 
 | Type        | Command                                             |

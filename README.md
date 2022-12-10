@@ -7,6 +7,15 @@
 
 ## Installation
 
+### Install required packages
+
+Install DEseq2 BiocManager::install(“DESeq2”)
+
+Install Rphenograph
+devtools::install\_github(“JinmiaoChenLab/Rphenograph”)
+
+### Install MD-ALL
+
 You can install the released version of MD-ALL from
 [github](https://github.com/gu-lab20/MD-ALL).
 
@@ -143,8 +152,8 @@ draw_DimPlot(obj_,group.by = "diag",reduction = "umap",highlightLevel = "TestSam
 ``` r
 obj_=run_PhenoGraph(obj_in = obj_,feature_panel = "boruta_genes",variable_n = 800,neighbor_k = 30)
 #> Run Phenograph: Used Feature N= 800 ; Used Sample N= 2043 ; Neighbor_k= 30 
-#>   Finding nearest neighbors...DONE ~ 2.91 s
-#>   Compute jaccard coefficient between nearest-neighbor sets...DONE ~ 0.86 s
+#>   Finding nearest neighbors...DONE ~ 2.89 s
+#>   Compute jaccard coefficient between nearest-neighbor sets...DONE ~ 0.79 s
 #>   Build undirected graph from the weighted links...DONE ~ 0.25 s
 #>   Run louvain clustering on the graph ...DONE ~ 0.06 s
 #>   Return a community class
