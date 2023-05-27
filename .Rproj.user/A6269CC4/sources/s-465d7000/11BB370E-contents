@@ -1,0 +1,151 @@
+
+
+
+#RNAseqCNV --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+output$para_RNAseqCNV=renderUI({req(input$fileVcf);para_RNAseqCNV})
+
+output$body_CNV=renderUI({req(input$fileVcf);body_CNV})
+
+output$CNVparameters=reactive(
+  paste0("Minimum Read Count of Gene: ",input$CNVminReadCnt,"; Mininum Depth of SNV: ",
+         input$CNVminDepth,"; Min MAF:",input$CNVmafMin, "; Max MAF: ",input$CNVmafMax)
+)
+
+RNAseqCNV_out=eventReactive(input$run_all,
+                            {
+                              running_cnv=showNotification("Running RNAseqCNV ...",duration = NULL,closeButton = F)
+                              on.exit(removeNotification(running_cnv),add=T)
+
+                              run_RNAseqCNV(df_count = df_count(),
+                                            snv_file = input$fileVcf$datapath,
+                                            genome_version = "hg38",
+                                            minReadCnt = input$CNVminReadCnt,
+                                            minDepth = input$CNVminDepth,
+                                            mafRange = c(input$CNVmafMin,input$CNVmafMax))
+                            }
+
+)
+
+output$cnvtext=renderTable(RNAseqCNV_out()$df_cnv_out)
+
+p_cnv=eventReactive(input$run_all,
+                    get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out())
+)
+
+output$cnvplot=renderPlot(p_cnv())
+
+output$RNAseqCNV.pdf = downloadHandler(
+  filename = function(){"RNAseqCNV.pdf"},
+  content = function(file){ggsave(file,plot=p_cnv(),width = 20,height = 10)}
+)
+
+CNVTabSum=reactive({
+  data.frame(
+    PredictedChromosomeNumber=RNAseqCNV_out()$df_cnv_out$chrom_n,
+    Chr21Alteration=ifelse(grepl("21",RNAseqCNV_out()$df_cnv_out$alterations),"Yes","No"),
+    stringsAsFactors = F
+  )
+})
+
+#Mutation  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+output$body_mutation=renderUI({
+  req(input$fileVcf)
+  body_mutation
+})
+
+out_mutation=reactive({
+  req(input$fileVcf)
+  getting_fc=showNotification("Extracting Mutations from VCF file ...",duration = NULL,closeButton = F)
+  on.exit(removeNotification(getting_fc),add=T)
+  get_BALL_mutation(file_vcf = input$fileVcf$datapath)
+})
+
+output$mutation_all=renderText(paste(out_mutation()$out_text_BALLmutation,collapse = ", "))
+output$mutation_BALLsubtypeDefining=renderText(paste(out_mutation()$out_text_SubtypeDefiningMutation,collapse = ", "))
+
+MutationTabSum=reactive({
+  data.frame(SubtypeDefiningMutation=
+               paste0(out_mutation()$BALL_snv$gene,":",gsub("p.","",out_mutation()$BALL_snv$aaPos))[!is.na(out_mutation()$BALL_snv$subtypesignature)],
+             RelatedSubtype=out_mutation()$BALL_snv$subtypesignature[!is.na(out_mutation()$BALL_snv$subtypesignature)],
+             stringsAsFactors = F
+  )
+})
+
+#Fusion  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+output$body_fusion=renderUI({
+  req(!(is.null(input$fileFusioncatcher) & is.null(input$fileCicero)))
+  body_fusion
+})
+
+#fusioncatcher
+fusionTableFusioncatcher=reactive({
+  req(input$fileFusioncatcher)
+  getting_fc=showNotification("Extracting fusions from Fusioncathcer output ...",duration = NULL,closeButton = F)
+  on.exit(removeNotification(getting_fc),add=T)
+  get_BALL_fusion(input$fileFusioncatcher$datapath,type = "fc")
+})
+output$fusionTableFusioncatcher=renderTable({fusionTableFusioncatcher()})
+
+#cicero
+fusionTableCicero=reactive({
+  req(input$fileCicero)
+  getting_c=showNotification("Extracting fusions from Cicero output ...",duration = NULL,closeButton = F)
+  on.exit(removeNotification(getting_c),add=T)
+  get_BALL_fusion(input$fileCicero$datapath,type = "c")})
+output$fusionTableCicero=renderTable({fusionTableCicero()})
+
+#summary
+FusionTabSum=reactive({
+  if(is.null(fusionTableFusioncatcher()) & is.null(fusionTableCicero())){NULL}
+  if((!is.null(fusionTableFusioncatcher())) | (!is.null(fusionTableCicero()))){
+    bind_rows(fusionTableFusioncatcher()[c(1,4,5,6,7)],fusionTableCicero()[c(1,4,5,6,7)]) %>% distinct()}
+})
+
+
+#Summarize   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+output$body_summarise=renderUI({
+  req(input$fileCount)
+  body_summarise
+})
+
+output$GeneExpressionTabSum=renderTable({if(is.null(GeneExpressionTabSum())){return(NULL)};GeneExpressionTabSum()})
+
+output$GEPpredictionTabSum=renderTable({if(is.null(GEPpredictionTabSum())){return(NULL)};GEPpredictionTabSum()})
+
+output$CNVTabSum=renderTable({if(is.null(CNVTabSum())){return(NULL)};CNVTabSum()})
+
+output$MutationTabSum=renderTable({if(is.null(MutationTabSum())){return(NULL)};MutationTabSum()})
+
+output$FusionTabSum=renderTable({if(is.null(FusionTabSum())){return(NULL)};FusionTabSum()})
+
+#SC input   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+observe({
+  shinyjs::toggleState("run_sc", condition = !(is.null(input$fileSinglecell) ))
+})
+
+count_sc=reactive({
+  req(input$fileSinglecell)
+  read_sc_file(input$fileSinglecell$datapath)
+})
+
+#SC output   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+output$body_SCoutput=renderUI({
+  req(input$fileSinglecell)
+  body_SCoutput
+})
+
+sc_report=reactive({
+  get_SC_subtypes(count_matrix = count_sc(),SE_celltype = SE_celltype,SE_BALL = SE_BALL)
+})
+
+output$scReport=renderPlot(sc_report(),width = 1400,height = 1300)
+
+output$downloadSCreport=renderUI({
+  req(sc_report())
+  downloadButton("Singlecell_BALL_subtyping.pdf","Download SC report")
+})
+
+output$Singlecell_BALL_subtyping.pdf = downloadHandler(
+  filename = function(){"Singlecell_BALL_subtyping.pdf"},
+  content = function(file){ggsave(file,plot=sc_report(),width = 24,height = 25)}
+)

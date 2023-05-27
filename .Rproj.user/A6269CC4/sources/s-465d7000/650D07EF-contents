@@ -1,0 +1,188 @@
+---
+title: "MD-ALL Introduction"
+author: "Zunsong Hu"
+date: "11/8/2022"
+package: MDALL
+output: html_document
+vignette: >
+  %\VignetteIndexEntry{An introduction to the MD-ALL}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# knitr::opts_knit$set(root.dir = '//smb-irwrsrchnas01/labs/zgu_grp/Group/Projects/Grp_GordanaRaca/ALL/')
+
+# knitr::opts_knit$set(root.dir = 'C://Users/zuhu/OneDrive - City of Hope National Medical Center/project/ZGu/B_ALL/MD-ALL/MDALL/')
+
+knitr::opts_knit$set(root.dir = '/home/zgu_labs/bin/R/shinyApp/MDALL/')
+
+```
+
+<strong>MD-ALL</strong> is an R package used to do ALL subtyping based on bulk-RNAseq data.
+
+
+## Import data
+The count data can be imported directory from a txt file, separated by space, tab or common. 
+The HTSeqCount generated gene level count are accepted for now. Later we will add the support for featureCounts.
+The ENSG id should be used as the gene name.
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+df_count=read_input("tests/BCL2MYC/COH002257_D1.DUX4patched.HTSeq",delimiter = "\t",header = F)
+
+dim(df_count)
+head(df_count)
+```
+
+## Normalization
+Normalization with reference data
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+# if(!is.null(df_vst_tmp)){df_vst=df_vst_tmp} else 
+#   {df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)}
+df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
+dim(df_vst)
+```
+
+## Get gene expression box plot
+```{r,message=FALSE,warning=FALSE,error=FALSE,fig.height=5,fig.width=8}
+obj_boxplot=obj_merge(obj_in = obj_1821,df_in = df_vst,assay_name_in = "vst")
+draw_BoxPlot(obj_in = obj_boxplot,group.by = "diag_raw1",features = "CRLF2",highlightLevel = "TestSample",plot_title = "Box Plot of Expression")
+```
+
+## Get normalized expression values for feature genes
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+df_feateure_exp=get_geneExpression(df_vst = df_vst,genes = c("CDX2","CRLF2","NUTM1"))
+df_feateure_exp
+```
+## Imputation
+```{r}
+df_vst_i=f_imputation(obj_ref = obj_234_HTSeq,df_in = df_vst)
+
+```
+
+
+## Add testing sample to reference dataset for subtype prediction
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=obj_merge(obj_in = obj_1821,df_in = df_vst_i,assay_name_in = "vst")
+```
+
+## Draw uMAP plot
+```{r,message=FALSE,warning=FALSE,error=FALSE,fig.width=7.5,fig.height=7.5}
+obj_=run_umap(obj_in = obj_,out_label = "umap",n_neighbors = 10,variable_n = 1058,feature_panel = "keyFeatures")
+draw_DimPlot(obj_,group.by = "diag_raw",reduction = "umap",highlightLevel = "TestSample")
+```
+
+
+## Run PhenoGraph clustering and SVM prediction
+```{r,message=FALSE,warning=FALSE,error=FALSE,fig.height=3,fig.width=7}
+
+df_out_phenograph=get_PhenoGraphPreds(obj_in = obj_,feature_panel = "keyFeatures",SampleLevel = "TestSample",
+                                      neighbor_k = 10,
+                                      # variable_n_list = c(seq(100,1000,100),1058)
+                                      variable_n_list = c(1058)
+                                      )
+
+df_out_svm=get_SVMPreds(models_svm,df_in = df_vst_i)
+  
+df_pred=bind_rows(df_out_phenograph,df_out_svm) %>% mutate(N=sprintf("%04d",featureN))
+  
+gg_tilePlot(df_in = df_pred,x = "N",y = "method",var_col = "pred",x_tick_label_var = "featureN",title = "Predition Heatmap")
+
+
+
+```
+
+## Run RNAseqCNV
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = "tests/BCL2MYC/COH002257_D1.HaplotypeCaller.vcf.mini")
+
+CNV_label=paste0(RNAseqCNV_out$df_cnv_out$gender,";\n",RNAseqCNV_out$df_cnv_out$chrom_n,",",RNAseqCNV_out$df_cnv_out$alterations)
+chrom_n=RNAseqCNV_out$df_cnv_out$chrom_n
+
+
+RNAseqCNV_out$df_cnv_out$chrom_n
+
+
+```
+
+## Draw RNAseqCNV Plot
+```{r, fig.width=20,fig.height=12}
+get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out,size1 = 0.01,size2 = 2)
+ggsave("out_raw/COH002948_D1/TRANSCRIPTOME/RNAseqCNV/COH002948_D1/RNAseqCNV1.pdf",height = 12,width = 20)
+```
+
+## Get mutations
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+out_mutation=get_BALL_mutation("tests/BCL2MYC/COH002257_D1.HaplotypeCaller.vcf.mini")
+out_mutation$out_text_BALLmutation
+```
+
+## Get fusions called by FuisonCatcher
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+fusion_fc=get_BALL_fusion("tests/Phlike/COH000893_D1.fusioncatcher",type = "fc")
+
+```
+
+## Get fusions called by Cicero
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+fusion_c=get_BALL_fusion("tests/PAX5ETV6/COH000121_D1.cicero",type = "c")
+
+```
+
+
+## Get GEP prediction summarise
+
+```{r}
+df_sum=get_subtype_final(
+  id="TestSample",
+  df_feateure_exp = df_feateure_exp,
+                  df_out_phenograph = df_out_phenograph,df_out_svm = df_out_svm,
+                  out_mutation = out_mutation,
+                  chrom_n = chrom_n,CNV_label = CNV_label,
+                  fusion_fc = fusion_fc,fusion_c = fusion_c)
+
+
+```
+
+
+## BALL subtyping for single cell data
+```{r,fig.width=24,fig.height=25}
+
+count_sc=read_sc_file("tests/countMatrix_singlecell.tsv")
+sc_report=get_SC_subtypes(count_matrix = count_sc,SE_celltype = SE_celltype,SE_BALL = SE_BALL)
+
+sc_report
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

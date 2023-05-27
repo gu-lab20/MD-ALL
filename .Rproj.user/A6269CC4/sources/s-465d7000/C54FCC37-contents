@@ -1,0 +1,13 @@
+# cd /home/zgu_labs/bin/R/shinyApp/MDALL
+
+# git remote add MD-ALL https://github.com/gu-lab20/MD-ALL
+#
+# git push -u --force MD-ALL master
+
+git config --global user.name "gu-lab20"
+git config --global user.email "gu.lab.2020s@gmail.com"
+
+git init
+git add .
+git commit -m "V2 update"
+git push -u MD-ALL master

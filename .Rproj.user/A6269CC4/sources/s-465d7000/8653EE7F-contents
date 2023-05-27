@@ -1,0 +1,27 @@
+rm(list=ls())
+req_librarys=c("dplyr","stringr","Rtsne","umap","Rphenograph","ggplot2","ggrepel","DESeq2",
+               "shiny","shinyjs","shinydashboard",
+               "MDALL")
+
+for(name in req_librarys){suppressMessages(suppressWarnings(library(name,quietly = T,verbose=F,character.only = T)))}
+
+addResourcePath("image","img/")
+
+
+shinyApp(ui=ui_dashboard(),server=shinyApp_server)
+
+
+
+shinyApp(ui=ui_dashboard,server=shinyApp_server)
+
+
+
+obj_1821_HTSeq$SE
+
+matrix=round(assays(obj_1821_HTSeq$SE)[["vst"]],1)
+
+saveRDS(matrix,"data/matrix.rds")
+
+SE=SummarizedExperiment(assays=list(vst=matrix),colData = colData(obj_1821_HTSeq))
+
+

@@ -1,0 +1,198 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  dev = 'pdf'
+)
+
+knitr::opts_knit$set(root.dir = '/scratch/zuhu/project/BALL/MDALL/')
+
+```
+
+# MD-ALL 
+#### Molecular Diagnosis of Acute Lymphoblastic Leukemia
+
+## Installation
+### Install required packages
+Install DEseq2
+BiocManager::install("DESeq2")
+
+Install Rphenograph
+devtools::install_github("JinmiaoChenLab/Rphenograph")
+
+### Install MD-ALL
+You can install the released version of MD-ALL from [github](https://github.com/gu-lab20/MD-ALL).
+
+| Type        | Command                                             |
+|-------------|-----------------------------------------------------|
+| Development | `devtools::install_github("gu-lab20/MD-ALL")`       |
+
+
+## Load required library
+```{r loading packages,message=FALSE,warning=FALSE,error=FALSE}
+rm(list=ls())
+
+req_librarys=c("dplyr","stringr",
+               "DESeq2","SummarizedExperiment","Rphenograph",
+               "Seurat","SingleR",
+               "ggplot2","ggrepel","cowplot","Rtsne","umap",
+               "shiny","shinyjs","shinydashboard")
+
+for(name in req_librarys){suppressMessages(suppressWarnings(library(name,quietly = T,verbose=F,character.only = T)))}
+
+for(script in list.files("R",full.names = T)){source(script)}
+
+for(data_ in list.files("data",full.names = T)){print(data_);load(data_)}
+library(usethis)
+
+```
+
+## Use ShinyApp
+#### shinyApp(ui=shinyApp_ui(),server=shinyApp_server)
+
+## Import data
+The count data can be imported directory from a txt file, separated by space, tab or common. 
+The HTSeqCount generated gene level count are accepted for now. Later we will add the support for featureCounts.
+The ENSG id should be used as the gene name.
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+df_count=read_input("tests/Hyperdiploid.HTSeq",delimiter = "\t",header = F)
+
+dim(df_count)
+head(df_count)
+```
+
+## Normalization
+Normalization with reference data
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+# if(!is.null(df_vst_tmp)){df_vst=df_vst_tmp} else 
+#   {df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)}
+df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
+dim(df_vst)
+```
+
+## Get gene expression box plot
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_boxplot=obj_merge(obj_in = obj_1821,df_in = df_vst,assay_name_in = "vst")
+draw_BoxPlot(obj_in = obj_boxplot,group.by = "diag_raw",features = "CRLF2",highlightLevel = "TestSample")
+```
+
+## Get normalized expression values for feature genes
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+get_geneExpression(df_vst = df_vst,genes = c("CDX2","CRLF2","DUX4","HLF","NUTM1"))
+```
+## Imputation
+```{r}
+df_vst_i=f_imputation(obj_ref = obj_234_HTSeq,assay_name_in = ,df_in = df_vst)
+
+```
+
+
+## Add testing sample to reference dataset for subtype prediction
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+obj_=obj_merge(obj_in = obj_1821,df_in = df_vst_i,assay_name_in = "vst")
+```
+
+## Draw uMAP plot
+```{r,message=FALSE,warning=FALSE,error=FALSE,fig.width=7.5,fig.height=5.5}
+obj_=run_umap(obj_in = obj_,out_label = "umap",n_neighbors = 10,variable_n = 1058,feature_panel = "keyFeatures")
+draw_DimPlot(obj_,group.by = "diag_raw",reduction = "umap",highlightLevel = "TestSample")
+```
+
+
+## Run PhenoGraph clustering and SVM prediction
+```{r,message=FALSE,warning=FALSE,error=FALSE,fig.height=2,fig.width=6}
+
+if(is.null(df_out_phenograph)){
+  df_out_phenograph=get_PhenoGraphPreds(obj_in = obj_,feature_panel = "keyFeatures",SampleLevel = "TestSample",
+                                      neighbor_k = 10,variable_n_list = c(seq(100,1000,100),1058))
+}
+
+df_out_svm=get_SVMPreds(models_svm,df_in = df_vst_i)
+  
+df_pred=bind_rows(df_out_phenograph,df_out_svm) %>% mutate(N=sprintf("%04d",featureN))
+  
+gg_tilePlot(df_in = df_pred,x = "N",y = "method",var_col = "pred",x_tick_label_var = "featureN")
+
+
+```
+
+## Run RNAseqCNV
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = "tests/Hyperdiploid.vcf")
+RNAseqCNV_out$df_cnv_out
+```
+
+## Draw RNAseqCNV Plot
+```{r, fig.width=20,fig.height=10}
+get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out)
+```
+
+## Get mutations
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+out_mutation=get_BALL_mutation("tests/Hyperdiploid.vcf")
+out_mutation$out_text_BALLmutation
+```
+
+## Get fusions called by FuisonCatcher
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+get_BALL_fusion("tests/COH000893_D1/final-list_candidate-fusion-genes.txt",type = "fc")
+
+```
+
+## Get fusions called by Cicero
+```{r ,message=FALSE,warning=FALSE,error=FALSE}
+get_BALL_fusion("tests/COH000893_D1/final_fusions.txt",type = "c")
+
+```
+
+
+## BALL subtyping for single cell data
+```{r,fig.width=24,fig.height=25}
+
+count_sc=read_sc_file("tests/countMatrix_singlecell.tsv")
+if(is.null(sc_report)){
+  sc_report=get_SC_subtypes(count_matrix = count_sc,SE_celltype = SE_celltype,SE_BALL = SE_BALL)
+}
+
+sc_report
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1685145976939.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2646815999",
+    "id" : "650D07EF",
+    "lastKnownWriteTime" : 1683779004,
+    "last_content_update" : 1683779004,
+    "path" : "/home/zgu_labs/bin/R/shinyApp/tmp/MDALL/Introduction.Rmd",
+    "project_path" : null,
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
