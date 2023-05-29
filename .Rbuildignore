@@ -3,4 +3,7 @@
 .Rbuildignore
 .Rhistory
 .Rproj.user/
+.git/
 MDALL.Rproj
+tests.zip
+README.Rmd
