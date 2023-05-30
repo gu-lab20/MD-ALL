@@ -92,18 +92,20 @@ Samples, and Count Matrix Only. <br> <br>
 #### 3.1 Upload data
 
 To run the analysis for bulk RNA-seq data in the Single Sample mode,
-please upload at least the read count file. MD-ALL also accepts VCF
-files and the raw outputs from fusion callers (MD-ALL supports
-FusionCatcher and Cicero) to perform more accurate B-ALL subtype
-classification. If the VCF and fusion calling files are missing, the
-output will be solely based on gene expression profile (GEP). <br> <br>
-After uploading the input files, click the ‘Run All’ button, and MD-ALL
-will start the analysis. The running time is around 3-5 minutes per
-sample using a standard desktop. Users can speed up the process by doing
-fewer rounds of GEP-based subtype prediction. The default parameter
-includes all gene number options. Please note that the parameters will
-not be displayed until the input files are successfully uploaded. <br>
-<br> To test MD-ALL, users can download the testing files in the
+please upload at least the read count file. This mode is for the
+analysis of only one sample. For analysis of mulitple samples, please
+check section 4. MD-ALL also accepts VCF files and the raw outputs from
+fusion callers (MD-ALL supports FusionCatcher and Cicero) to perform
+more accurate B-ALL subtype classification. If the VCF and fusion
+calling files are missing, the output will be solely based on gene
+expression profile (GEP). <br> <br> After uploading the input files,
+click the ‘Run’ button, and MD-ALL will start the analysis. The running
+time is around 3-5 minutes per sample using a standard desktop. Users
+can speed up the process by doing fewer rounds of GEP-based subtype
+prediction. The default parameter includes all gene number options.
+Please note that the parameters will not be displayed until the input
+files are successfully uploaded. <br> <br> To test MD-ALL, users can
+download the testing files in the
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
 file from this GitHub repository. <br> <br>
 
@@ -235,18 +237,33 @@ classification of this test sample as Ph-like subtype. <br> <br>
 
 #### 4.1 Upload data
 
-<br>
-<br>
-
-<img src="img/input_batch.1.JPG" align="center" width="100%" height="100%"/>
+For analysis of multiple samples, users can use the ‘Multiple Samples’
+mode. Firstly, the users need to prepare the metadata table containing
+the filenames of the read count, VCF, FusionCatcher, and Cicero outputs,
+as shown below:
+<img src="img/input_batch.2.JPG" align="center" width="100%" height="100%"/>
 <br> <br>
 
-#### 4.2 Results for bulk RNA-seq analysis in Multiple Samplse mode
+After uploading the correct metadata table, the parameters of MD-ALL
+will appear, just like in ‘Single Sample’ mode. Users can click the
+“Run” button to start the analysis.
+<img src="img/input_batch.3.JPG" align="center" width="100%" height="100%"/>
+<br> <br>
 
-<br>
-<br>
+#### 4.2 Results for bulk RNA-seq analysis in ‘Multiple Samples’ mode
 
+After all the analyses are done, users can check the results in the
+‘Results’ tab. Select the sample ID in the top left panel, and the
+MD-ALL summary in the top right panel will update according to the
+selected sample ID. The bottom panel contains the results of GEP and
+RNAseqCNV; users can check these results using the ‘GEP’ and ‘RNAseqCNV’
+tabs.
+
+Results showing GEP in the ‘Multiple Samples’ mode:
 <img src="img/output_batch2.jpg" align="center" width="100%" height="100%"/>
+<br> <br>
+
+Results showing RNAseqCNV in the ‘Multiple Samples’ mode:
 <img src="img/output_batch.3.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
@@ -254,16 +271,27 @@ classification of this test sample as Ph-like subtype. <br> <br>
 
 #### 5.1 Upload data
 
-<br>
-<br>
+For users who only have the gene read count matrix, MD-ALL offers the
+‘Count Matrix Only’ mode. The input data should be a read count matrix
+with rows representing genes and columns representing samples; the first
+column should be the ENSG gene IDs. After uploading the read count
+matrix, the parameters will appear and users can click the ‘Run’ button
+to start the
+analysis.
 
-<img src="img/input_count.1.jpg" align="center" width="100%" height="100%"/>
+<img src="img/input_count.2.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
 #### 5.2 Results for bulk RNA-seq analysis in Count Matrix Only mode
 
-<br> <br>
+The ‘Count Matrix Only’ mode only contains the results of GEP, since no
+other types of input are used. Users can check the results after the
+analysis is done. Users can still select the sample IDs in the top left
+panel, and the other parts will update
+accordingly:
+
 <img src="img/out_count.2.jpg" align="center" width="100%" height="100%"/>
+<br> <br>
 
 ## 6 Analysis for scRNA-seq data
 
