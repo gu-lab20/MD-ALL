@@ -41,7 +41,7 @@ installedPackages=  installed.packages()[,"Package"]
 
 #Install CRAN R packages
 list.of.packages=c("devtools", "BiocManager","dplyr","stringr","Seurat",
-                   "ggplot2","ggrepel","cowplot","umap","ggpubr",
+                   "ggplot2","ggrepel","cowplot","umap",
                    "shiny","shinyjs","shinydashboard")
 
 new.packages = list.of.packages[!(list.of.packages %in% installedPackages)]
@@ -81,27 +81,29 @@ run_shiny_MDALL()
 ```
 
 After launching the Shiny app, users can select the analysis for either
-bulk RNA-seq or scRNA-seq data from the left sidebar. <br> <br>
+bulk RNA-seq or scRNA-seq data from the left sidebar. In the analysis
+for bulk RNA-seq, three modes are available: Single Sample, Multiple
+Samples, and Count Matrix Only. <br> <br>
 
 <img src="img/1.input1.JPG" align="center" width="100%" height="100%"/>
 
-## 3 Analysis for bulk RNA-seq data
+## 3 Analysis for bulk RNA-seq data (Single Sample)
 
-#### 3.1 Upload data for bulk RNA-seq analysis
+#### 3.1 Upload data
 
-To run the analysis for bulk RNA-seq data, please upload at least the
-read count file. MD-ALL also accepts VCF files and the raw outputs from
-fusion callers (MD-ALL supports FusionCatcher and Cicero) to perform
-more accurate B-ALL subtype classification. If the VCF and fusion
-calling files are missing, the output will be solely based on gene
-expression profile (GEP). <br> <br> After uploading the input files,
-click the ‘Run All’ button, and MD-ALL will start the analysis. The
-running time is around 3-5 minutes per sample using a standard desktop.
-Users can speed up the process by doing fewer rounds of GEP-based
-subtype prediction. The default parameter includes all gene number
-options. Please note that the parameters will not be displayed until the
-input files are successfully uploaded. <br> <br> To test MD-ALL, users
-can download the testing files in the
+To run the analysis for bulk RNA-seq data in the Single Sample mode,
+please upload at least the read count file. MD-ALL also accepts VCF
+files and the raw outputs from fusion callers (MD-ALL supports
+FusionCatcher and Cicero) to perform more accurate B-ALL subtype
+classification. If the VCF and fusion calling files are missing, the
+output will be solely based on gene expression profile (GEP). <br> <br>
+After uploading the input files, click the ‘Run All’ button, and MD-ALL
+will start the analysis. The running time is around 3-5 minutes per
+sample using a standard desktop. Users can speed up the process by doing
+fewer rounds of GEP-based subtype prediction. The default parameter
+includes all gene number options. Please note that the parameters will
+not be displayed until the input files are successfully uploaded. <br>
+<br> To test MD-ALL, users can download the testing files in the
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
 file from this GitHub repository. <br> <br>
 
@@ -229,9 +231,43 @@ classification of this test sample as Ph-like subtype. <br> <br>
 
 <img src="img/6.sum1.JPG" align="center" width="100%" height="100%"/>
 
-## 4 Analysis for scRNA-seq data
+## 4 Analysis for bulk RNA-seq data (Multiple Samples)
 
-#### 4.1 Upload data for scRNA-seq analysis
+#### 4.1 Upload data
+
+<br>
+<br>
+
+<img src="img/input_batch.1.JPG" align="center" width="100%" height="100%"/>
+<br> <br>
+
+#### 4.2 Results for bulk RNA-seq analysis in Multiple Samplse mode
+
+<br>
+<br>
+
+<img src="img/output_batch2.jpg" align="center" width="100%" height="100%"/>
+<img src="img/output_batch.3.jpg" align="center" width="100%" height="100%"/>
+<br> <br>
+
+## 5 Analysis for bulk RNA-seq data (Count Matrix Only)
+
+#### 5.1 Upload data
+
+<br>
+<br>
+
+<img src="img/input_count.1.jpg" align="center" width="100%" height="100%"/>
+<br> <br>
+
+#### 5.2 Results for bulk RNA-seq analysis in Count Matrix Only mode
+
+<br> <br>
+<img src="img/out_count.2.jpg" align="center" width="100%" height="100%"/>
+
+## 6 Analysis for scRNA-seq data
+
+#### 6.1 Upload data for scRNA-seq analysis
 
 The input file for scRNA-seq analysis is the count matrix of single
 cells with rows for genes and columns for cells. The
@@ -242,7 +278,7 @@ testing.
 
 <img src="img/1.sc_input.JPG" align="center" width="100%" height="100%"/>
 
-#### 4.2 Results of B-ALL subtyping using scRNA-seq data
+#### 6.2 Results of B-ALL subtyping using scRNA-seq data
 
 Three UMAPs of single cells are shown on the left side. The top UMAP is
 colored by different cell types. The middle UMAP shows the cells
