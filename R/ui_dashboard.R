@@ -535,7 +535,7 @@ tabBody_bulkRNA_countONly=function(){tabsetPanel(
 body_SCinput=function(){fluidRow(
   # box(title = "BALL subtyping using single-cell RNAseq data",background = "teal",width = 12,
   fluidRow(column(width = 4,
-                  box(title = "Upload single-cell count File",width = NULL,height = 300,solidHeader = T,status = "primary",
+                  box(title = "Upload single-cell count File",width = NULL,solidHeader = T,status = "primary",
                       p(strong("Single-cell Count File")),tags$h6("with rows for genes and columns for cells"),
                       fileInput("fileSinglecell",label =  NULL, multiple = F, buttonLabel = "Select ...")
                   ),

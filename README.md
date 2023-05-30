@@ -85,31 +85,27 @@ bulk RNA-seq or scRNA-seq data from the left sidebar. In the analysis
 for bulk RNA-seq, three modes are available: Single Sample, Multiple
 Samples, and Count Matrix Only. <br> <br>
 
-<img src="img/1.input1.JPG" align="center" width="100%" height="100%"/>
-
-## 3 Analysis for bulk RNA-seq data (Single Sample)
-
-#### 3.1 Upload data
-
-To run the analysis for bulk RNA-seq data in the Single Sample mode,
-please upload at least the read count file. This mode is for the
-analysis of only one sample. For analysis of mulitple samples, please
-check section 4. MD-ALL also accepts VCF files and the raw outputs from
-fusion callers (MD-ALL supports FusionCatcher and Cicero) to perform
-more accurate B-ALL subtype classification. If the VCF and fusion
-calling files are missing, the output will be solely based on gene
-expression profile (GEP). <br> <br> After uploading the input files,
-click the ‘Run’ button, and MD-ALL will start the analysis. The running
-time is around 3-5 minutes per sample using a standard desktop. Users
-can speed up the process by doing fewer rounds of GEP-based subtype
-prediction. The default parameter includes all gene number options.
-Please note that the parameters will not be displayed until the input
-files are successfully uploaded. <br> <br> To test MD-ALL, users can
-download the testing files in the
+<img src="img/1.input.1.PNG" align="center" width="100%" height="100%"/>
+<br> <br> \#\# 3 Analysis for bulk RNA-seq data (Single Sample) \#\#\#\#
+3.1 Upload data To run the analysis for bulk RNA-seq data in the Single
+Sample mode, please upload at least the read count file. This mode is
+for the analysis of only one sample. For analysis of mulitple samples,
+please check section 4. MD-ALL also accepts VCF files and the raw
+outputs from fusion callers (MD-ALL supports FusionCatcher and Cicero)
+to perform more accurate B-ALL subtype classification. If the VCF and
+fusion calling files are missing, the output will be solely based on
+gene expression profile (GEP). <br> <br> After uploading the input
+files, click the ‘Run’ button, and MD-ALL will start the analysis. The
+running time is around 3-5 minutes per sample using a standard desktop.
+Users can speed up the process by doing fewer rounds of GEP-based
+subtype prediction. The default parameter includes all gene number
+options. Please note that the parameters will not be displayed until the
+input files are successfully uploaded. <br> <br> To test MD-ALL, users
+can download the testing files in the
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
 file from this GitHub repository. <br> <br>
 
-<img src="img/1.input2.JPG" align="center" width="100%" height="100%"/>
+<img src="img/1.input.2.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
 
 The following are examples of code used in the analysis of [GATK
@@ -179,7 +175,7 @@ see a higher overall expression for chr9 and chrX, as well as a skewed
 distribution (shown in red line) of MAF, indicating gain of chr9 and
 chrX. <br> <br>
 
-<img src="img/3.CNV1.jpg" align="center" width="100%" height="100%"/>
+<img src="img/3.CNV.jpg" align="center" width="100%" height="100%"/>
 
 <br> <br>
 
@@ -195,7 +191,7 @@ tested for this purpose.
 <br> <br> This figure indicates that no B-ALL mutations were detected in
 the VCF file of this possible Ph/-like case. <br> <br>
 
-<img src="img/4.mutation1.JPG" align="left" width="100%" height="100%"/>
+<img src="img/4.mutation1.PNG" align="left" width="100%" height="100%"/>
 
 <br> <br>
 
@@ -205,7 +201,7 @@ subtype.
 
 <br> <br>
 
-<img src="img/4.mutation2.JPG" align="left" width="100%" height="100%"/>
+<img src="img/4.mutation2.PNG" align="left" width="100%" height="100%"/>
 
 <br> <br>
 
@@ -216,7 +212,7 @@ B-ALL-related fusions will be listed as in the following figure. Please
 be aware that fusions supported by a low number of reads may not be
 reliable. <br> <br>
 
-<img src="img/5.fusion1.JPG" align="center" width="100%" height="100%"/>
+<img src="img/5.fusion1.PNG" align="center" width="100%" height="100%"/>
 
 #### 3.6 Subtype summary
 
@@ -231,7 +227,7 @@ This case has no BCR::ABL1 fusion but multiple CRLF2 rearrangements, a
 signature event for Ph-like subtype, which lead to definitive
 classification of this test sample as Ph-like subtype. <br> <br>
 
-<img src="img/6.sum1.JPG" align="center" width="100%" height="100%"/>
+<img src="img/6.sum1.PNG" align="center" width="100%" height="100%"/>
 
 ## 4 Analysis for bulk RNA-seq data (Multiple Samples)
 
@@ -241,13 +237,13 @@ For analysis of multiple samples, users can use the ‘Multiple Samples’
 mode. Firstly, the users need to prepare the metadata table containing
 the filenames of the read count, VCF, FusionCatcher, and Cicero outputs,
 as shown below:
-<img src="img/input_batch.2.JPG" align="center" width="100%" height="100%"/>
+<img src="img/batch_input1.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
 
 After uploading the correct metadata table, the parameters of MD-ALL
 will appear, just like in ‘Single Sample’ mode. Users can click the
 “Run” button to start the analysis.
-<img src="img/input_batch.3.JPG" align="center" width="100%" height="100%"/>
+<img src="img/batch_input2.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
 #### 4.2 Results for bulk RNA-seq analysis in ‘Multiple Samples’ mode
@@ -260,11 +256,11 @@ RNAseqCNV; users can check these results using the ‘GEP’ and ‘RNAseqCNV’
 tabs.
 
 Results showing GEP in the ‘Multiple Samples’ mode:
-<img src="img/output_batch2.jpg" align="center" width="100%" height="100%"/>
+<img src="img/batch_output1.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
 Results showing RNAseqCNV in the ‘Multiple Samples’ mode:
-<img src="img/output_batch.3.jpg" align="center" width="100%" height="100%"/>
+<img src="img/batch_output2.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
 ## 5 Analysis for bulk RNA-seq data (Count Matrix Only)
@@ -279,7 +275,7 @@ matrix, the parameters will appear and users can click the ‘Run’ button
 to start the
 analysis.
 
-<img src="img/input_count.2.jpg" align="center" width="100%" height="100%"/>
+<img src="img/count_input2.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
 
 #### 5.2 Results for bulk RNA-seq analysis in Count Matrix Only mode
@@ -290,7 +286,7 @@ analysis is done. Users can still select the sample IDs in the top left
 panel, and the other parts will update
 accordingly:
 
-<img src="img/out_count.2.jpg" align="center" width="100%" height="100%"/>
+<img src="img/count_output.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
 ## 6 Analysis for scRNA-seq data
@@ -301,10 +297,9 @@ The input file for scRNA-seq analysis is the count matrix of single
 cells with rows for genes and columns for cells. The
 ‘countMatrix\_singlecell.tsv’ file in the same
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
-zip file can be used for
-testing.
+zip file can be used for testing.
 
-<img src="img/1.sc_input.JPG" align="center" width="100%" height="100%"/>
+<img src="img/sc_input.PNG" align="center" width="100%" height="100%"/>
 
 #### 6.2 Results of B-ALL subtyping using scRNA-seq data
 
