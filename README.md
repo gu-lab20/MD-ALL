@@ -183,26 +183,21 @@ chrX. <br> <br>
 
 The ‘Gene mutation’ tab will display B-ALL-related mutations detected in
 the VCF file.  
-<br> <br> The ‘B-ALL Mutations’ panel will show known B-ALL mutations
-(as we describe in our manuscript) detected in this sample.  
+The ‘B-ALL Mutations’ panel will show known B-ALL mutations (as we
+describe in our manuscript) detected in this sample.  
 The ‘B-ALL Subtype Defining Mutations’ panel will display the B-ALL
 subtype-defining mutations (PAX5:P80R, IKZF1:N159Y, and ZEB2:H1038R)
-tested for this purpose.  
-<br> <br> This figure indicates that no B-ALL mutations were detected in
-the VCF file of this possible Ph/-like case. <br> <br>
+tested for this purpose.
 
+This figure indicates that no B-ALL mutations were detected in the VCF
+file of this possible Ph/-like case.
 <img src="img/4.mutation1.PNG" align="left" width="100%" height="100%"/>
-
 <br> <br>
 
 Another example of mutation results is as follows: a PAX5:P80R mutation
 was detected, which is the definitive mutation for the PAX5 P80R
 subtype.
-
-<br> <br>
-
 <img src="img/4.mutation2.PNG" align="left" width="100%" height="100%"/>
-
 <br> <br>
 
 #### 3.5 Fusion results
