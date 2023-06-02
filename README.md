@@ -9,9 +9,14 @@
 lymphoblastic leukemia (B-ALL) using bulk RNA-seq or single-cell RNA-seq
 (scRNA-seq) data. The minimum input required for bulk RNA-seq analysis
 is the gene expression read count output from bioinformatics tools, such
-as HTSeq-count and FeatureCount. By uploading additional VCF files and
-raw outputs of fusion callers (FusionCatcher and/or Cicero), MD-ALL can
-detect B-ALL-related mutations and fussions in test sample and run
+as
+[HTSeq-count](https://htseq.readthedocs.io/en/release_0.11.1/count.html)
+and
+[FeatureCount](https://academic.oup.com/bioinformatics/article/30/7/923/232889).
+By uploading additional VCF files and raw outputs of fusion callers
+([FusionCatcher](https://github.com/ndaniel/fusioncatcher) and/or
+[Cicero](https://github.com/stjude/CICERO)), MD-ALL can detect
+B-ALL-related mutations and fussions in test sample and run
 [RNAseqCNV](https://www.nature.com/articles/s41375-022-01547-8) to
 determine chromosome-level CNVs as well as iAMP21. MD-ALL can classify
 B-ALL cases into a total of 26 subtypes using bulk RNA-seq data. For
@@ -19,7 +24,7 @@ scRNA-seq analysis, only a gene (per row) x cell (per column) expression
 matrix is needed. MD-ALL is a one-stop platform for sensitive, accurate,
 and comprehensive B-ALL subtyping based on RNA-seq data.
 
-The flowchart for MD-ALL: <br>
+The workflow of MD-ALL: <br>
 
 <img src="img/flowchart.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
@@ -220,12 +225,15 @@ A summary of the analyses will be displayed under the “Summary” tab,
 along with the predicted final subtype, which will integrate the
 information from genetic alterations and GEP, shown in the last panel.
 Please note that the fusions listed in the ‘Genetic Alteration’ panel
-will only include fusions related to the final subtype. <br> <br> For
-this case, the GEP prediction indicated a Ph/-like subtype with high
-accuracy because both PhenoGraph and SVM achieved 100% confidence score.
-This case has no BCR::ABL1 fusion but multiple CRLF2 rearrangements, a
-signature event for Ph-like subtype, which lead to definitive
-classification of this test sample as Ph-like subtype. <br> <br>
+will only include fusions related to the final subtype. A final subtype
+will be generated automatically only if consistent predictions are
+obtained from both PhenoGraph and SVM. Otherwise, user judgment is
+required. <br> <br> For this case, the GEP prediction indicated a
+Ph/-like subtype with high accuracy because both PhenoGraph and SVM
+achieved 100% confidence score. This case has no BCR::ABL1 fusion but
+multiple CRLF2 rearrangements, a signature event for Ph-like subtype,
+which lead to definitive classification of this test sample as Ph-like
+subtype. <br> <br>
 
 <img src="img/6.sum1.PNG" align="center" width="100%" height="100%"/>
 
