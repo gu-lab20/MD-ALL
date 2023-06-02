@@ -96,22 +96,27 @@ for bulk RNA-seq, three modes are available: Single Sample, Multiple
 Samples, and Count Matrix Only. <br> <br>
 
 <img src="img/1.input.1.PNG" align="center" width="100%" height="100%"/>
-<br> <br> \#\# 3 Analysis for bulk RNA-seq data (Single Sample) \#\#\#\#
-3.1 Upload data To run the analysis for bulk RNA-seq data in the Single
-Sample mode, please upload at least the read count file. This mode is
-for the analysis of only one sample. For analysis of mulitple samples,
-please check section 4. MD-ALL also accepts VCF files and the raw
-outputs from fusion callers (MD-ALL supports FusionCatcher and Cicero)
-to perform more accurate B-ALL subtype classification. If the VCF and
-fusion calling files are missing, the output will be solely based on
-gene expression profile (GEP). <br> <br> After uploading the input
-files, click the ‘Run’ button, and MD-ALL will start the analysis. The
-running time is around 3-5 minutes per sample using a standard desktop.
-Users can speed up the process by doing fewer rounds of GEP-based
-subtype prediction. The default parameter includes all gene number
-options. Please note that the parameters will not be displayed until the
-input files are successfully uploaded. <br> <br> To test MD-ALL, users
-can download the testing files in the
+<br> <br>
+
+## 3 Analysis for bulk RNA-seq data (Single Sample)
+
+#### 3.1 Upload data
+
+To run the analysis for bulk RNA-seq data in the Single Sample mode,
+please upload at least the read count file. This mode is for the
+analysis of only one sample. For analysis of mulitple samples, please
+check section 4. MD-ALL also accepts VCF files and the raw outputs from
+fusion callers (MD-ALL supports FusionCatcher and Cicero) to perform
+more accurate B-ALL subtype classification. If the VCF and fusion
+calling files are missing, the output will be solely based on gene
+expression profile (GEP). <br> <br> After uploading the input files,
+click the ‘Run’ button, and MD-ALL will start the analysis. The running
+time is around 3-5 minutes per sample using a standard desktop. Users
+can speed up the process by doing fewer rounds of GEP-based subtype
+prediction. The default parameter includes all gene number options.
+Please note that the parameters will not be displayed until the input
+files are successfully uploaded. <br> <br> To test MD-ALL, users can
+download the testing files in the
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
 file from this GitHub repository. <br> <br>
 
