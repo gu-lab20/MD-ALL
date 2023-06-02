@@ -513,6 +513,8 @@ get_subtype_final=function(
 
   if(is.na(subtype_final)){subtype_final=paste0(gep_,collapse = "|");confidence="Medium"}
 
+  subtype_final_=ifelse(pg_==svm_,subtype_final,"ManualCheckNeeded")
+
   # if("Low Hyperdiploid" %in% pg_)
 
   #get output table ----
@@ -554,8 +556,9 @@ get_subtype_final=function(
 
       subtype_GEP=paste0(gep_,collapse = "|"),
 
-      subtype_final=subtype_final,
-      confidence=confidence,
+      subtype_final_possible=subtype_final,
+      subtype_final=subtype_final_,
+      confidence=ifelse(subtype_final_==subtype_final,confidence,NA),
 
       stringsAsFactors = F
     )
@@ -675,7 +678,7 @@ run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDe
 #' @export
 #'
 #' @examples
-run_countMatrix=function(file_countMatrix,featureN_PG=c(100,1058)){
+run_countMatrix=function(file_countMatrix,featureN_PG=c(1000,1058)){
   df_counts=as.data.frame(vroom::vroom(file_countMatrix))
   names(df_counts)[1]="feature"
 

@@ -96,7 +96,7 @@ para_umap=function(){box(title="UMAP Parameters",width=NULL,status = "warning",
 para_phenograph=function(){box(title="PhenoGraph Parameters",width=NULL,status = "warning",
                                column(width = 6,
                                p(strong("Used Gene Number")),tags$h6("Choose from: 100,200,300,400,500,600,700,800,900,1000,1058. Separated by ,"),
-                               textInput("phenographGeneN",label = NULL,value = "100")),
+                               textInput("phenographGeneN",label = NULL,value = "1000,1058")),
                                column(width = 6,
                                p("Input Gene Numbers:"),
                                textOutput("phenographGeneN"))

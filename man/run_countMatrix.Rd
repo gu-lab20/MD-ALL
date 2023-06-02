@@ -4,7 +4,7 @@
 \alias{run_countMatrix}
 \title{run_countMatrix}
 \usage{
-run_countMatrix(file_countMatrix, featureN_PG = c(100, 1058))
+run_countMatrix(file_countMatrix, featureN_PG = c(1000, 1058))
 }
 \arguments{
 \item{featureN_PG}{}

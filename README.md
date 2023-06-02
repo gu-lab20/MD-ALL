@@ -17,7 +17,12 @@ determine chromosome-level CNVs as well as iAMP21. MD-ALL can classify
 B-ALL cases into a total of 26 subtypes using bulk RNA-seq data. For
 scRNA-seq analysis, only a gene (per row) x cell (per column) expression
 matrix is needed. MD-ALL is a one-stop platform for sensitive, accurate,
-and comprehensive B-ALL subtyping based on RNA-seq data. <br> <br>
+and comprehensive B-ALL subtyping based on RNA-seq data.
+
+The flowchart for MD-ALL: <br>
+
+<img src="img/flowchart.jpg" align="center" width="100%" height="100%"/>
+<br> <br>
 
 ## 1\. Installation
 
