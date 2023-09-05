@@ -4,7 +4,7 @@
 \alias{get_BALL_fusion}
 \title{get_BALL_fusion}
 \usage{
-get_BALL_fusion(file_fusion, type)
+get_BALL_fusion(file_fusion, type, cutoff = 2)
 }
 \arguments{
 \item{type}{}

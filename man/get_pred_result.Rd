@@ -4,7 +4,7 @@
 \alias{get_pred_result}
 \title{get_pred_result}
 \usage{
-get_pred_result(df_pred)
+get_pred_result(df_pred, count_PAX5ETV6_as_PAX5alt = F)
 }
 \arguments{
 \item{df_pred}{}

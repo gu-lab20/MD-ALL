@@ -180,6 +180,7 @@ run_PhenoGraph=function(obj_in,
 #' @examples
 get_PhenoGraphPred=function(obj_in,panelName="PhenographPred",SampleLevel="TestSample",type="value"){
   df_phenograph=obj_in[[panelName]]
+  SampleLevel=gsub("[-]",".",SampleLevel)
   df_out=df_phenograph[df_phenograph$COH_sample %in% c(SampleLevel),]
 
   value_out=paste0("PhenoGraph Clustering Labeled Subtype: ",df_out$diag_pred,
@@ -278,10 +279,19 @@ get_pred_label=function(df_pred){
 #' @export
 #'
 #' @examples
-get_pred_result=function(df_pred){
-  (df_pred %>% mutate(n=n()) %>%  group_by(pred) %>%
-     mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
-     select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$out
+get_pred_result=function(df_pred,count_PAX5ETV6_as_PAX5alt=F){
+  if(!count_PAX5ETV6_as_PAX5alt){
+    out=(df_pred %>% mutate(n=n()) %>%  group_by(pred) %>%
+           mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
+           select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$out
+  }
+
+  if(count_PAX5ETV6_as_PAX5alt){
+    out=(df_pred %>% mutate(pred=ifelse(pred %in% c("PAX5::ETV6","PAX5 P80R"),"PAX5alt",pred),n=n()) %>%  group_by(pred) %>%
+           mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
+           select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$out
+  }
+  out
 }
 
 #' get_pred_score
@@ -292,10 +302,19 @@ get_pred_result=function(df_pred){
 #' @export
 #'
 #' @examples
-get_pred_score=function(df_pred){
-  (df_pred %>% mutate(n=n()) %>%  group_by(pred) %>%
-     mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
-     select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$percentage
+get_pred_score=function(df_pred,count_PAX5ETV6_as_PAX5alt=F){
+  if(!count_PAX5ETV6_as_PAX5alt){
+    out=(df_pred %>% mutate(n=n()) %>%  group_by(pred) %>%
+           mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
+           select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$percentage
+  }
+
+  if(count_PAX5ETV6_as_PAX5alt){
+    out=(df_pred %>% mutate(pred=ifelse(pred %in% c("PAX5::ETV6","PAX5 P80R"),"PAX5alt",pred),n=n()) %>%  group_by(pred) %>%
+           mutate(n_pred=n(),percentage=round(n_pred/n,2),out=ifelse(percentage>0.5,pred,"Unclassified")) %>% ungroup() %>%
+           select(pred,percentage,out) %>% distinct() %>% arrange(desc(percentage)) %>% slice_head(n=1))$percentage
+  }
+  out
 }
 
 
@@ -326,9 +345,10 @@ get_subtype_final=function(
   #Gene expression
   subtype_exp=NA
   if(df_feateure_exp$Expression[df_feateure_exp$Gene=="CRLF2"]>=9){subtype_exp="CRLF2"}
-  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"]>=9){subtype_exp="CDX2/UBTF"}
-  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"]>=9.5){subtype_exp="NUTM1"}
-
+  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"]>=9){ subtype_exp="CDX2/UBTF"}
+  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"]>=9){subtype_exp="NUTM1"}
+  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"]>=9){  subtype_exp="HLF"}
+  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"]>=9){ subtype_exp="DUX4"}
 
   #CNV
   Chr21Alteration=ifelse(grepl("21",CNV_label),"Yes","No")
@@ -336,186 +356,226 @@ get_subtype_final=function(
   if(chrom_n>=51){
     subtype_cnv="Hyperdiploid"
   } else if (chrom_n>=47) {
-    subtype_cnv="Low Hyperdiploid"
+    subtype_cnv="Low hyperdiploid"
   } else if (chrom_n>=39) {
     subtype_cnv=NA
   } else if (chrom_n >=31) {
-    subtype_cnv="Low Hypodiploid"
+    subtype_cnv="Low hypodiploid"
   } else {
-    subtype_cnv="Near Haploid"
+    subtype_cnv="Near haploid"
   }
 
   #fusion
-  fusion_fc_top=fusion_fc %>% slice_head(n=2)
-  fusion_c_top=fusion_c %>% slice_head(n=2)
-  fusion_out=bind_rows(fusion_fc[-(2:3)],fusion_c[-(2:3)]) %>% distinct()
+  if(nrow(fusion_fc)>0){
+    fusion_fc_=fusion_fc %>% select(FusionInFile,Spanning_pairs,Spanning_unique_reads) %>% distinct()
+  } else {
+    fusion_fc_=data.frame()
+  }
 
+  if(nrow(fusion_c)>0){
+    fusion_c_=fusion_c %>% select(FusionInFile,readsA,readsB) %>% distinct()
+  } else {
+    fusion_c_=data.frame()
+  }
+
+  fusion_out=bind_rows(fusion_fc[-(2:3)],fusion_c[-(2:3)]) %>% distinct()
+  subtype_fusion=sort(unique(fusion_out$PossibleSubtype))
 
   #GEP
-  gep_=NA;subtype_GEP_def=NA
   pg_=get_pred_result(df_out_phenograph)
   score_phenograph=get_pred_score(df_out_phenograph)
   subtype_phenograph_label=get_pred_label(df_out_phenograph)
   gp_all=df_out_phenograph$pred
-
-
 
   svm_=get_pred_result(df_out_svm)
   score_svm=get_pred_score(df_out_svm)
   subtype_svm_label=get_pred_label(df_out_svm)
   svm_all=df_out_svm$pred
 
-
   gep_all=sort(unique(c(gp_all,svm_all)))
 
+  #GEP for PAX5alt
+  pg1=get_pred_result(df_out_phenograph,count_PAX5ETV6_as_PAX5alt = T)
+  score_phenograph1=get_pred_score(df_out_phenograph,count_PAX5ETV6_as_PAX5alt = T)
 
+  svm1=get_pred_result(df_out_svm,count_PAX5ETV6_as_PAX5alt = T)
+  score_svm1=get_pred_score(df_out_svm,count_PAX5ETV6_as_PAX5alt = T)
 
-  # pg_="y";svm_="x"
-  if(pg_==svm_){gep_=svm_}
-  if(!pg_==svm_){
-    if(any(c(pg_,svm_) %in% fusion_out$PossibleSubtype)){
-      gep_=c(pg_,svm_)[c(pg_,svm_) %in% fusion_out$PossibleSubtype]
-    } else {
-      if(all(c(svm_,pg_)=="Unclassified")){gep_="Unclassified"}
-      else if ("Unclassified" %in% c(svm_,pg_)){
-        gep_=c(svm_,pg_)[-match("Unclassified",c(svm_,pg_))]
-      } else {
-        gep_=c(svm_,pg_)
+  if(svm_==pg_){subtype_GEP=svm_} else {subtype_GEP=sort(c(svm_,pg_))}
+  if(svm1==pg1){subtype_GEP1=svm1} else {subtype_GEP1=sort(c(svm1,pg1))}
+
+  #summarise ----
+  like_subtypes=c("Ph-like","KMT2A-like","ZNF384-like","ETV6::RUNX1-like","PAX5alt")
+  names(like_subtypes)=c("Ph","KMT2A","ZNF384","ETV6::RUNX1","PAX5alt")
+
+  subtype_final=NA;confidence=NA;stage=NA
+
+  if(is.na(subtype_final)){
+    if(any(subtype_exp %in% c("CDX2/UBTF","HLF","NUTM1"))){
+      subtype_exp_=subtype_fusion[subtype_fusion %in% c("CDX2/UBTF","HLF","NUTM1")]
+      if(any(subtype_exp_ %in% subtype_GEP)){
+        subtype_final=subtype_exp_[subtype_exp_ %in% subtype_GEP]
+        subtype_final=subtype_final[1]
+        stage="HighGeneExp"
       }
     }
   }
 
-  subtype_GEP=gep_
-
-  if("ETV6::RUNX1" %in% subtype_GEP){gep_all=unique(c(gep_all,"ETV6::RUNX1-like"))}
-  if("Ph" %in% subtype_GEP){gep_all=unique(c(gep_all,"Ph-like"))}
-
-  if("ETV6::RUNX1" %in% subtype_GEP){subtype_GEP=unique(c(subtype_GEP,"ETV6::RUNX1-like"))}
-  if("Ph" %in% subtype_GEP){subtype_GEP=unique(c(subtype_GEP,"Ph-like"))}
-
-  #fusion sum
-  fusion_fc_=NA;fusion_c_=NA;subtype_fusion_GEP=NA;subtype_fusion_alone=NA;df_fusion_fc=data.frame();df_fusion_c=data.frame()
-  if(any(gep_all %in% c(fusion_fc$PossibleSubtype,fusion_c$PossibleSubtype))){
-
-    if(any(gep_all %in% fusion_fc$PossibleSubtype)){
-      df_fusion_fc=fusion_fc %>% filter(PossibleSubtype %in% gep_all) %>%
-        arrange(desc(Spanning_unique_reads)) %>% slice_head(n=2) %>% arrange(FusionInFile)
-      fusion_fc_=df_fusion_fc$FusionInFile
-    }
-
-    if(any(gep_all %in% fusion_c$PossibleSubtype)){
-      df_fusion_c=fusion_c %>% filter(PossibleSubtype %in% gep_all) %>%
-        arrange(desc(readsB)) %>% slice_head(n=2) %>% arrange(FusionInFile)
-      fusion_c_=df_fusion_c$FusionInFile
-    }
-
-    df_fusion_=bind_rows(df_fusion_fc,df_fusion_c) %>%
-      select(FusionInFile,PossibleSubtype) %>% distinct() %>% arrange(FusionInFile)
-
-    subtype_fusion_GEP=sort(unique(df_fusion_$PossibleSubtype))
-
-  }
-
-  if(!any(gep_all %in% c(fusion_fc$PossibleSubtype,fusion_c$PossibleSubtype))){
-
-    fusion_def_subtypes=c("BCL2/MYC","MEF2D","CRLF2","ETV6::RUNX1","ETV6::RUNX1-like")
-
-    df_fusion_out=fusion_out %>%
-      group_by(method) %>% slice_head(n=2) %>% arrange(FusionInFile)
-
-    fusion_fc_=df_fusion_out$FusionInFile[df_fusion_out$method=="fc"]
-    fusion_c_=df_fusion_out$FusionInFile[df_fusion_out$method=="c"]
-
-    subtype_fusion_alone=unique(df_fusion_out$PossibleSubtype)
-  }
-
-  #summarise ----
-  subtype_final=NA;confidence="High"
-
-  subtype_final=ifelse(any(subtype_GEP %in% subtype_exp),intersect(subtype_GEP,subtype_exp),NA)
-  if(is.na(subtype_final)){if("Hyperdiploid" %in% gep_all & "Hyperdiploid" %in% subtype_cnv){subtype_final="Hyperdiploid"}}
-
-  if(is.na(subtype_final)){subtype_final=ifelse(any(subtype_GEP %in% subtype_fusion_GEP),intersect(subtype_GEP,subtype_fusion_GEP),NA)}
-
-  if(is.na(subtype_final)){if("iAMP21" %in% gep_all & Chr21Alteration=="Yes"){subtype_final="iAMP21"}}
-  if(is.na(subtype_final)){if( "Near Haploid" %in% subtype_cnv){subtype_final="Near Haploid"}}
-  if(is.na(subtype_final)){if( "Low hypodiploid" %in% subtype_cnv){subtype_final="Low hypodiploid"}}
-
-  if(is.na(subtype_final)){subtype_final=ifelse(any(gep_all %in% subtype_fusion_GEP),intersect(gep_all,subtype_fusion_GEP),NA)}
-  if(is.na(subtype_final)){subtype_final=ifelse(any(subtype_GEP %in% subtype_fusion_alone),intersect(subtype_GEP,subtype_fusion_alone),NA)}
-  if(is.na(subtype_final)){subtype_final=ifelse(any(subtype_GEP %in% subtype_cnv),intersect(subtype_GEP,subtype_cnv),NA)}
-  if(is.na(subtype_final)){subtype_final=ifelse(any(subtype_GEP %in% out_mutation$subtype_mutation),intersect(subtype_GEP,out_mutation$subtype_mutation),NA)}
-
-
   if(is.na(subtype_final)){
-    if(svm_=="DUX4" & pg_=="DUX4" & score_phenograph==1 & score_svm==1){subtype_final="DUX4"}
-  }
-
-  if(is.na(subtype_final)){
-    if(any(c('ETV6::RUNX1',"RUNX1::ETV6") %in% c(fusion_fc_,fusion_c_))){subtype_final="ETV6::RUNX1"}
-  }
-
-  if(is.na(subtype_final)){
-    if(('ETV6::RUNX1' %in% gp_all & 'ETV6::RUNX1' %in% svm_all) & (pg_=='ETV6::RUNX1' | svm_=='ETV6::RUNX1')){
-      subtype_final="ETV6::RUNX1-like"
+    if(any(subtype_fusion %in% c('ETV6::RUNX1','KMT2A','TCF3::PBX1','MEF2D','ZNF384','PAX5::ETV6','BCL2/MYC','DUX4',"NUTM1","CDX2/UBTF","HLF","Ph","ZEB2/CEBP"))){
+      subtype_fusion_=subtype_fusion[subtype_fusion %in% c('ETV6::RUNX1','KMT2A','TCF3::PBX1','MEF2D','ZNF384','PAX5::ETV6','BCL2/MYC','DUX4',"NUTM1","CDX2/UBTF","HLF","Ph","ZEB2/CEBP")]
+      if(any(subtype_fusion_ %in% subtype_GEP)){
+        subtype_final=subtype_fusion_[subtype_fusion_ %in% subtype_GEP]
+        subtype_final=subtype_final[1]
+        stage="Fusion"
+      }
     }
   }
 
+  if(is.na(subtype_final)){if(subtype_cnv %in% "Near haploid"     & ("Hyperdiploid"   %in% subtype_GEP | "Low hypodiploid" %in% subtype_GEP)){subtype_final="Near haploid";stage="Aneuploid"}}
+  if(is.na(subtype_final)){if(subtype_cnv %in% "Hyperdiploid"     & "Hyperdiploid"    %in% subtype_GEP){subtype_final="Hyperdiploid";    stage="Aneuploid"}}
+  if(is.na(subtype_final)){if(subtype_cnv %in% "Low hyperdiploid" & "Hyperdiploid"    %in% subtype_GEP){subtype_final="Low hyperdiploid";stage="Aneuploid";confidence="Low"}}
+  if(is.na(subtype_final)){if(subtype_cnv %in% "Low hypodiploid"  & "Low hypodiploid" %in% subtype_GEP){subtype_final="Low hypodiploid"; stage="Aneuploid"}}
+  if(is.na(subtype_final)){if(Chr21Alteration %in% "Yes"          & "iAMP21"          %in% subtype_GEP){subtype_final="iAMP21";          stage="Aneuploid"}}
+
+  if(is.na(subtype_final)){if("IKZF1 N159Y" %in% out_mutation$subtype_mutation & "IKZF1 N159Y" %in% subtype_GEP){subtype_final="IKZF1 N159Y";stage="Mutation"}}
+  if(is.na(subtype_final)){if("PAX5 P80R" %in% out_mutation$subtype_mutation & "PAX5 P80R" %in% subtype_GEP){subtype_final="PAX5 P80R";stage="Mutation"}}
+  if(is.na(subtype_final)){if("ZEB2/CEBP" %in% out_mutation$subtype_mutation & "ZEB2/CEBP" %in% subtype_GEP){subtype_final="ZEB2/CEBP";stage="Mutation"}}
+
+  if(is.na(subtype_final)){if(!"ETV6::RUNX1" %in% subtype_fusion &  "ETV6::RUNX1" %in% subtype_GEP){subtype_final="ETV6::RUNX1-like";stage="like"}}
+  if(is.na(subtype_final)){if(!"KMT2A" %in% subtype_fusion &  "KMT2A" %in% subtype_GEP){subtype_final="KMT2A-like";stage="like"}}
+  if(is.na(subtype_final)){if(!"ZNF384" %in% subtype_fusion &  "ZNF384" %in% subtype_GEP){subtype_final="ZNF384-like";stage="like"}}
+
+  if(is.na(subtype_final)){if(!"Ph" %in% subtype_fusion & "Ph" %in% subtype_GEP & "Ph-like" %in% subtype_fusion){subtype_final="Ph-like";stage="Ph-like"}}
+  if(is.na(subtype_final)){if(!"Ph" %in% subtype_fusion & "Ph" %in% subtype_GEP & "CRLF2" %in% subtype_exp){subtype_final="Ph-like";stage="Ph-like"}}
+  if(is.na(subtype_final)){if(!"Ph" %in% subtype_fusion & svm_=="Ph" & pg_=="Ph"){subtype_final="Ph-like";stage="Ph-like"}}
+
+  if(is.na(subtype_final)){if("PAX5alt" %in% subtype_GEP & "PAX5alt" %in% subtype_fusion){subtype_final="PAX5alt";stage="PAX5alt"}}
+  if(is.na(subtype_final)){if("PAX5alt" %in% subtype_GEP & grepl("PAX5",out_mutation$out_text_BALLmutation)){subtype_final="PAX5alt";stage="PAX5alt"}}
+  if(is.na(subtype_final)){if(svm_=="PAX5alt" & pg_=="PAX5alt"){subtype_final="PAX5alt";stage="PAX5alt"}}
+
+  if(is.na(subtype_final)){if(subtype_exp %in% "CRLF2" & (!"Ph" %in% subtype_GEP) & "CRLF2(non-Ph-like)" %in% subtype_fusion){subtype_final="CRLF2(non-Ph-like)";confidence="Low";stage="CRLF2"}}
+
   if(is.na(subtype_final)){
-    if ("IKZF1 N159Y" %in% gp_all & "IKZF1 N159Y" %in% svm_all &
-        (pg_=="IKZF1 N159Y" | svm_=="IKZF1 N159Y")){subtype_final="IKZF1 N159Y"}
+    x=(data.frame(g=c(pg_,svm_),s=c(score_phenograph,score_svm)) %>% arrange(desc(s)) %>% slice_head(n=1) %>% filter(s>0.5))$g
+    if(length(x)>=1){
+    if(x %in% names(like_subtypes)){x=like_subtypes[names(like_subtypes)==x]}
+    subtype_final=x;stage="GEPalone"
+    }
   }
 
-  if(is.na(subtype_final)){if(pg_=="KMT2A" & svm_=="KMT2A"){subtype_final="KMT2A-like"}}
+  if(is.na(subtype_final)){subtype_final="Other";confidence="Low";stage="Other"}
 
-  if(is.na(subtype_final)){if(pg_=="Low hypodiploid" & svm_=="Low hypodiploid"){subtype_final="Low hypodiploid"}}
-
-
-  if(is.na(subtype_final)){if(pg_=="PAX5alt" & svm_=="PAX5alt"){subtype_final="PAX5alt"}}
-  if(is.na(subtype_final)){if((pg_=="PAX5alt" | svm_=="PAX5alt") & grepl("PAX5",out_mutation$out_text_BALLmutation)){subtype_final="PAX5alt"}}
-
-  if(is.na(subtype_final)){if(pg_=="Ph" & svm_=="Ph"){subtype_final="Ph-like"}}
-  if(is.na(subtype_final)){if("Ph" %in% gp_all & "Ph" %in% svm_all & "Ph" %in% subtype_GEP){subtype_final="Ph-like"}}
-
-  if(is.na(subtype_final)){if(pg_=="ZNF384" & svm_=="ZNF384"){subtype_final="ZNF384-like"}}
-
-  if(is.na(subtype_final)){
-    if(("CRLF2(non-Ph-like)" %in% fusion_fc_top$PossibleSubtype | "CRLF2(non-Ph-like)" %in% fusion_c_top$PossibleSubtype ) &
-       "CRLF2" %in% subtype_exp &
-       ((!"Ph" %in% pg_)|(!"Ph" %in% svm_))){subtype_final="CRLF2(non-Ph-like)"}
+  #Modify subtype_final
+  if("iAMP21" %in% subtype_GEP & length(subtype_GEP)==2){
+    if(((pg_=="iAMP21" & score_phenograph > 0.9) | (svm_=="iAMP21" & score_svm > 0.9)) & "Yes" %in% Chr21Alteration){
+      if(subtype_final!="iAMP21"){stage="Modify_iAMP21"}
+      subtype_final="iAMP21"
+    }
   }
 
-  #Overwrite
-  if(pg_=="Hyperdiploid" & "Hyperdiploid" %in% svm_all & "Low Hyperdiploid" %in% subtype_cnv){subtype_final="Low Hyperdiploid"}
+  if("Ph" %in% subtype_GEP & length(subtype_GEP)==2){
+    if(((pg_=="Ph" & score_phenograph > 0.9) | (svm_=="Ph" & score_svm > 0.9)) & ("CRLF2" %in% subtype_exp | "Ph-like" %in% subtype_fusion)){
+      if(subtype_final!="Ph-like"){stage="Modify_Ph-like"}
+      subtype_final="Ph-like";
+    }
+  }
 
-  if(any(c('BCL2::IGH','IGH::BCL2',"IGH::MYC","MYC::IGH","IGH::CASC11","FGFR3::IGH","IGH::FGFR3") %in% c(fusion_c_top$FusionInFile,fusion_fc_top$FusionInFile)) &
-     min(c(score_phenograph,score_svm))<0.8){
-    subtype_final="BCL2/MYC"
-    fusion_fc_=fusion_fc$FusionInFile[fusion_fc$PossibleSubtype=="BCL2/MYC"]
-    fusion_c_=fusion_c$FusionInFile[fusion_c$PossibleSubtype=="BCL2/MYC"]}
-  if(any(c("ETV6::RUNX1","RUNX1::ETV6") %in% c(fusion_c_top$FusionInFile,fusion_fc_top$FusionInFile))){subtype_final="ETV6::RUNX1"}
+  if("NUTM1" %in% subtype_GEP & length(subtype_GEP)==2){
+    if(((pg_=="NUTM1" & score_phenograph > 0.9) | (svm_=="NUTM1" & score_svm > 0.9)) & ("NUTM1" %in% subtype_exp | "NUTM1" %in% subtype_fusion)){
+      if(subtype_final!="NUTM1"){stage="Modify_NUTM1"}
+      subtype_final="NUTM1"
+    }
+  }
 
-  if(("PAX5alt" %in% pg_ & "PAX5alt" %in% svm_) & grepl("PAX5",out_mutation$out_text_BALLmutation)){subtype_final="PAX5alt"}
-  if(("PAX5alt" %in% pg_ & "PAX5alt" %in% svm_) & "iAMP21" %in% subtype_final){subtype_final="PAX5alt"}
+  if(svm_=="Low hypodiploid" & pg_=="Low hypodiploid" & grepl("TP53",out_mutation$out_text_BALLmutation)){
+    if(subtype_final!="Low hypodiploid"){stage="Modify_LowHypodiploid"}
+    subtype_final="Low hypodiploid"
+  }
 
-  if((any(c("PAX5alt","Ph") %in% pg_) & any(c("PAX5alt","Ph") %in% svm_)) & "iAMP21" %in% subtype_final){subtype_final=paste0(gep_,collapse = "|");confidence="Medium"}
+  if("Ph" %in% subtype_fusion  & "Ph" %in% gep_all){
+    if(subtype_final!="Ph"){stage="Modify_Ph"}
+    subtype_final="Ph";stage="Modify_Ph"
+  }
 
-  if(("Ph" %in% pg_ & "Ph" %in% svm_) & "Ph-like" %in% subtype_fusion_GEP){subtype_final="Ph-like"}
-  if(any(c("BCR::ABL1","ABL1::BCR") %in% c(fusion_fc_top$FusionInFile,fusion_c_top$FusionInFile))){subtype_final="Ph"}
+  #Modify confidence
+  define_confidence1=function(subtype_final,pg_,svm_,score_svm,score_phenograph,subtype_fusion){
+    confidence=NA
 
-  if("Near Haploid" %in% subtype_cnv & any(c("Hyperdiploid","Low hypodiploid") %in% c(pg_,svm_))){subtype_final="Near Haploid"}
+    # Feature gene expression subtypes
+    if(subtype_final %in% c("CDX2/UBTF","NUTM1","HLF")){
+      if(((pg_==subtype_final & score_phenograph > 0.9) | (svm_==subtype_final & score_svm > 0.9)) & (subtype_final %in% subtype_exp)){confidence="High"}
+      if(pg_==subtype_final & pg_==svm_ & subtype_final  %in%  subtype_exp){confidence="High"}
+    }
 
-  if("NUTM1" %in% subtype_fusion_GEP & "NUTM1" %in% subtype_exp){subtype_final="NUTM1"}
-  if("TCF3::PBX1" %in% gp_all & "TCF3::PBX1" %in% svm_all & "TCF3::PBX1" %in% subtype_fusion_GEP){subtype_final="TCF3::PBX1"}
-  if("ZNF384" %in% gp_all & "ZNF384" %in% svm_all & "ZNF384" %in% subtype_fusion_GEP){subtype_final="ZNF384"}
+    # Fusion subtypes
+    if(subtype_final %in% c("NUTM1",'ETV6::RUNX1','KMT2A','TCF3::PBX1','MEF2D','ZNF384','PAX5::ETV6','BCL2/MYC','DUX4',"NUTM1","HLF","Ph","ZEB2/CEBP","HLF","NUTM1","CDX2/UBTF")){
+      if(pg_==subtype_final & pg_==svm_ & subtype_final %in% subtype_fusion){confidence="High"}
+      if(((pg_==subtype_final & score_phenograph > 0.9) | (svm_==subtype_final & score_svm > 0.9)) & subtype_final %in% subtype_fusion){confidence="High"}
+    }
 
-  if(is.na(subtype_final)){if(length(subtype_fusion_alone)==1 & "Ph-like" %in% subtype_fusion_alone){subtype_final="Ph-like"}}
+    #Aneuploid change subtypes
+    Aneuploid_subtypes=c("Near haploid","Hyperdiploid","Low hypodiploid")
+    Aneuploid_GEPs=list(c("Hyperdiploid","Low hypodiploid"),"Hyperdiploid","Low hypodiploid")
+    if(subtype_final %in% Aneuploid_subtypes){
+      subtype_final1=Aneuploid_GEPs[[match(subtype_final,Aneuploid_subtypes)]]
+      if(pg_ %in% subtype_final1 & svm_ %in% subtype_final1 & subtype_final %in% subtype_cnv){confidence="High"}
+      if(((pg_ %in% subtype_final1 & score_phenograph > 0.9) | (svm_ %in% subtype_final1 & score_svm > 0.9)) & subtype_final %in% subtype_cnv){confidence="High"}
+    }
 
-  if(is.na(subtype_final)){subtype_final=paste0(gep_,collapse = "|");confidence="Medium"}
+    #iAMP21
+    if(subtype_final == "iAMP21"){
+      if(pg_==subtype_final & score_phenograph > 0.9 & svm_==subtype_final & score_svm > 0.9 & Chr21Alteration == "Yes"){confidence="High"}
+    }
 
-  subtype_final_=ifelse(pg_==svm_,subtype_final,"ManualCheckNeeded")
+    # Mutation subtypes
+    if(subtype_final %in% c("PAX5 P80R","IKZF1 N159Y","ZEB2/CEBP")){
+      if(pg_==subtype_final & pg_==svm_ & subtype_final  %in%  out_mutation$subtype_mutation){confidence="High"}
+      if(((pg_==subtype_final & score_phenograph > 0.9) | (svm_==subtype_final & score_svm > 0.9)) & (subtype_final %in% out_mutation$subtype_mutation)){confidence="High"}
+    }
 
-  # if("Low Hyperdiploid" %in% pg_)
+    # -like subytpes
+    like_subtypes=c("Ph-like","KMT2A-like","ZNF384-like","ETV6::RUNX1-like","PAX5alt")
+    names(like_subtypes)=c("Ph","KMT2A","ZNF384","ETV6::RUNX1","PAX5alt")
+
+    if(subtype_final %in% like_subtypes){
+      subtype_final1=names(like_subtypes)[like_subtypes==subtype_final]
+      if(pg_==subtype_final1 & pg_==svm_ & ((pg_==subtype_final1 & score_phenograph > 0.9) | (svm_==subtype_final1 & score_svm > 0.9))){confidence="High"}
+    }
+
+    # DUX4
+    if(subtype_final %in% c("DUX4")){
+      if(subtype_final==pg_ & pg_==svm_ & score_svm>0.9 & score_phenograph>0.9){confidence="High"}
+    }
+
+    # Ph-like
+    if(subtype_final %in% c("Ph-like")){
+      if("Ph"==pg_ & pg_==svm_ & "Ph-like" %in%  subtype_fusion){confidence="High"}
+      if("Ph"==pg_ & pg_==svm_ & "CRLF2" %in%  subtype_exp){confidence="High"}
+    }
+
+    #PAX5alt
+    if(subtype_final %in% c("PAX5alt")){
+      if(subtype_final==pg_ & pg_==svm_ & "PAX5" %in% subtype_fusion){confidence="High"}
+      if(subtype_final==pg_ & pg_==svm_ & grepl("PAX5",out_mutation$out_text_BALLmutation)){confidence="High"}
+    }
+
+    confidence
+  }
+
+  if(is.na(confidence)){
+    confidence=define_confidence1(subtype_final,pg_,svm_,score_svm,score_phenograph,subtype_fusion)
+  }
+
+  if(is.na(confidence)){
+    confidence="Low"
+  }
+
+  #Modify PAX5alt
+  if((!(subtype_final=='PAX5::ETV6' | subtype_final=="PAX5 P80R")) & ((!is.na(confidence) & confidence=="Low")|is.na(confidence))){
+    if("PAX5alt" %in%  pg1 & "PAX5alt" %in% svm1){subtype_final='PAX5alt';stage="PAX5merge"}
+    if("PAX5alt" %in%  pg1 & score_phenograph1>0.9 & "PAX5alt" %in% svm1 & score_svm1>0.9){subtype_final='PAX5alt';;stage="PAX5merge";confidence="High"}
+  }
 
   #get output table ----
   df_sum=
@@ -523,15 +583,19 @@ get_subtype_final=function(
       sample_id=id,
       CDX2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"],
       CRLF2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CRLF2"],
-      # PAX5=df_feateure_exp$Expression[df_feateure_exp$Gene=="PAX5"],
-      # HLF=df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"],
+      HLF=df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"],
       NUTM1=df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"],
-      # MEGF10=df_feateure_exp$Expression[df_feateure_exp$Gene=="MEGF10"],
-      # DUX4=df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"],
+      DUX4=df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"],
 
-      fusion_fc=paste0(fusion_fc_,collapse = ","),
-      fusion_c=paste0(fusion_c_,collapse = ","),
-
+      fusion_fc=  ifelse(
+        nrow(fusion_fc_)>=1,
+        paste0(paste0(fusion_fc_$FusionInFile,"(",
+                      paste0(fusion_fc_$Spanning_pairs,";",fusion_fc_$Spanning_unique_reads),")"),collapse = ","),
+        NA),
+      fusion_c=  ifelse(
+        nrow(fusion_c_)>=1,
+        paste0(paste0(fusion_c_$FusionInFile,"(",
+                      paste0(fusion_c_$readsA,";",fusion_c_$readsB),")"),collapse = ","),NA),
       Mutation_BALL=gsub("\n","|",out_mutation$out_text_BALLmutation),
       Mutation_Sub_def=out_mutation$out_text_SubtypeDefiningMutation,
 
@@ -551,14 +615,13 @@ get_subtype_final=function(
       subtype_mutation=out_mutation$subtype_mutation,
       subtype_cnv=subtype_cnv,
 
-      subtype_fusion_GEP=paste0(subtype_fusion_GEP,collapse = ","),
-      subtype_fusion_alone=paste0(subtype_fusion_alone,collapse = ","),
+      subtype_fusion=paste0(subtype_fusion,collapse = ","),
 
-      subtype_GEP=paste0(gep_,collapse = "|"),
+      subtype_GEP=paste0(subtype_GEP,collapse = ","),
 
       subtype_final_possible=subtype_final,
-      subtype_final=subtype_final_,
-      confidence=ifelse(subtype_final_==subtype_final,confidence,NA),
+      confidence=confidence,
+      stage=stage,
 
       stringsAsFactors = F
     )
