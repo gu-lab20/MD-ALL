@@ -25,6 +25,7 @@ matrix is needed. MD-ALL is a one-stop platform for sensitive, accurate,
 and comprehensive B-ALL subtyping based on RNA-seq data. To generate the
 input files for MD-ALL, users can refer to this RNA-seq analysis
 [pipeline](https://github.com/gu-lab20/RNAseq) from raw fastq files.
+MD-ALL can be run by both shinyAPP or command lines.
 
 The workflow of MD-ALL: <br>
 
@@ -33,14 +34,14 @@ The workflow of MD-ALL: <br>
 
 ## 1\. Installation
 
-### Install R and RStudio
+### 1.1 Install R and RStudio
 
 MD-ALL is implemented in R. To ensure a better user experience, we
 recommend installing RStudio. Before using MD-ALL, please ensure that
 you have installed [R](https://www.r-project.org/) and
 [RStudio](https://posit.co/download/rstudio-desktop/). <br> <br>
 
-### Install required packages
+### 1.2 Install required packages
 
 The following codes will check the packages already exist and install
 all the missing ones and MD-ALL. Please note that
@@ -83,7 +84,7 @@ installation
 [script](https://github.com/gu-lab20/MD-ALL/raw/master/R/install_required_packages.R)
 and run it in RStudio.
 
-## 2\. Start MD-ALL ShinyApp
+## 2\. MD-ALL ShinyApp
 
 #### Luanch the APP
 
@@ -100,9 +101,9 @@ Samples, and Count Matrix Only. <br> <br>
 <img src="img/1.input.1.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
 
-## 3 Analysis for bulk RNA-seq data (Single Sample)
+### 2.1 Analysis for bulk RNA-seq data (Single Sample)
 
-#### 3.1 Upload data
+#### 2.1.1 Upload data
 
 To run the analysis for bulk RNA-seq data in the Single Sample mode,
 please upload at least the read count file. This mode is for the
@@ -146,7 +147,7 @@ gatk HaplotypeCaller \
 
 <br> <br>
 
-#### 3.2 Gene expression results
+#### 2.1.2 Gene expression results
 
 The ‘GEP Prediction’ tab contains results for GEP that are based on the
 read count file. <br> <br> The top two panels show the head and tail of
@@ -175,7 +176,7 @@ high CRLF2 expression. <br> <br>
 
 <img src="img/2.GEP.jpg" align="center" width="100%" height="100%"/>
 
-#### 3.3 RNAseqCNV results
+#### 2.1.3 RNAseqCNV results
 
 The ‘RNAseqCNV’ tab contains results for the analysis of RNAseqCNV. Both
 the read count file and VCF file are required for this analysis. Please
@@ -196,7 +197,7 @@ chrX. <br> <br>
 
 <br> <br>
 
-#### 3.4 Mutation results
+#### 2.1.4 Mutation results
 
 The ‘Gene mutation’ tab will display B-ALL-related mutations detected in
 the VCF file.  
@@ -217,7 +218,7 @@ subtype.
 <img src="img/4.mutation2.PNG" align="left" width="100%" height="100%"/>
 <br> <br>
 
-#### 3.5 Fusion results
+#### 2.1.5 Fusion results
 
 If the output files from FusionCathcer and/or Cicero are uploaded,
 B-ALL-related fusions will be listed as in the following figure. Please
@@ -226,7 +227,7 @@ reliable. <br> <br>
 
 <img src="img/5.fusion1.PNG" align="center" width="100%" height="100%"/>
 
-#### 3.6 Subtype summary
+#### 2.1.6 Subtype summary
 
 A summary of the analyses will be displayed under the “Summary” tab,
 along with the predicted final subtype, which will integrate the
@@ -244,9 +245,9 @@ subtype. <br> <br>
 
 <img src="img/6.sum1.PNG" align="center" width="100%" height="100%"/>
 
-## 4 Analysis for bulk RNA-seq data (Multiple Samples)
+### 2.2 Analysis for bulk RNA-seq data (Multiple Samples)
 
-#### 4.1 Upload data
+#### 2.2.1 Upload data
 
 For analysis of multiple samples, users can use the ‘Multiple Samples’
 mode. Firstly, the users need to prepare the metadata table containing
@@ -261,7 +262,7 @@ will appear, just like in ‘Single Sample’ mode. Users can click the
 <img src="img/batch_input2.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
-#### 4.2 Results for bulk RNA-seq analysis in ‘Multiple Samples’ mode
+#### 2.2.2 Results for bulk RNA-seq analysis in ‘Multiple Samples’ mode
 
 After all the analyses are done, users can check the results in the
 ‘Results’ tab. Select the sample ID in the top left panel, and the
@@ -278,9 +279,9 @@ Results showing RNAseqCNV in the ‘Multiple Samples’ mode:
 <img src="img/batch_output2.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
-## 5 Analysis for bulk RNA-seq data (Count Matrix Only)
+### 2.3 Analysis for bulk RNA-seq data (Count Matrix Only)
 
-#### 5.1 Upload data
+#### 2.3.1 Upload data
 
 For users who only have the gene read count matrix, MD-ALL offers the
 ‘Count Matrix Only’ mode. The input data should be a read count matrix
@@ -293,7 +294,7 @@ analysis.
 <img src="img/count_input2.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
 
-#### 5.2 Results for bulk RNA-seq analysis in Count Matrix Only mode
+#### 2.3.2 Results for bulk RNA-seq analysis in Count Matrix Only mode
 
 The ‘Count Matrix Only’ mode only contains the results of GEP, since no
 other types of input are used. Users can check the results after the
@@ -304,9 +305,9 @@ accordingly:
 <img src="img/count_output.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
-## 6 Analysis for scRNA-seq data
+### 2.4 Analysis for scRNA-seq data
 
-#### 6.1 Upload data for scRNA-seq analysis
+#### 2.4.1 Upload data for scRNA-seq analysis
 
 The input file for scRNA-seq analysis is the count matrix of single
 cells with rows for genes and columns for cells. The
@@ -316,7 +317,7 @@ zip file can be used for testing.
 
 <img src="img/sc_input.PNG" align="center" width="100%" height="100%"/>
 
-#### 6.2 Results of B-ALL subtyping using scRNA-seq data
+#### 2.4.2 Results of B-ALL subtyping using scRNA-seq data
 
 Three UMAPs of single cells are shown on the left side. The top UMAP is
 colored by different cell types. The middle UMAP shows the cells
@@ -339,6 +340,24 @@ scRNA-seq GEP. <br> <br>
 <img src="img/sc_output.jpg" align="center" width="100%" height="100%"/>
 
 <br> <br>
+
+## 3\. MD-ALL Command line
+
+### 3.1 Analysis for bulk RNA-seq data
+
+#### 3.1.1 Prepare the gene\*sample count matrix
+
+``` r
+# matrix_count=vroom::vroom("")
+```
+
+Get the gene expression only predicted subtypes
+
+``` r
+# get_GEP_pred
+```
+
+### 3.2 Analysis for scRNA-seq data
 
 ### Contact:
 

@@ -294,6 +294,63 @@ get_pred_result=function(df_pred,count_PAX5ETV6_as_PAX5alt=F){
   out
 }
 
+#' get_GEP_pred
+#'
+#' @param count_matrix
+#' @param featureN_PG
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_GEP_pred=function(count_matrix,
+                      featureN_PG=c(100,200,300,400,500,600,700,800,900,1000,1058)){
+  df_vsts=get_vst_values(obj_in = obj_234_HTSeq,df_count = count_matrix)
+
+  df_listing=data.frame(id=colnames(df_vsts)[2:ncol(df_vsts)],stringsAsFactors = F) %>%
+    mutate(obs=1:n())
+
+  df_out_GEP=bind_rows(lapply(df_listing$obs,function(i){
+    sample_id=df_listing$id[i]
+    cat(paste0("Prediction for ",sample_id," ...\n"))
+
+    #imputation
+    df_vst_i=f_imputation(obj_ref = obj_234_HTSeq,df_in = df_vsts[c("feature",sample_id)])
+
+    #get obj
+    obj_=obj_merge(obj_in = obj_1821,df_in = df_vst_i,assay_name_in = "vst")
+
+    #phenograph
+    cat("Running phenograph...")
+    df_out_phenograph=get_PhenoGraphPreds(obj_in = obj_,feature_panel = "keyFeatures",SampleLevel = sample_id,
+                                          neighbor_k = 10,
+                                          # variable_n_list = c(seq(100,1000,100),1058)
+                                          variable_n_list = featureN_PG
+    )
+    cat("Running SVM...\n")
+
+    df_out_svm=get_SVMPreds(models_svm,df_in = df_vst_i,id = sample_id)
+
+    df_feateure_exp=get_geneExpression(df_vst = df_vsts[c("feature",sample_id)],genes = c("CDX2","CRLF2","NUTM1"))
+
+    data.frame(
+      sample_id=sample_id,
+      CDX2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"],
+      CRLF2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CRLF2"],
+      NUTM1=df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"],
+      phenoGraph_pred=get_pred_result(df_out_phenograph),
+      phenoGraph_predScore=get_pred_score(df_out_phenograph),
+      phenoGraph_predLabel=get_pred_label(df_out_phenograph),
+
+      svm_pred=get_pred_result(df_out_svm),
+      svm_predScore=get_pred_score(df_out_svm),
+      svm_predLabel=get_pred_label(df_out_svm),
+
+      stringsAsFactors = F
+    )
+  }))
+}
+
 #' get_pred_score
 #'
 #' @param df_pred
