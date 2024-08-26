@@ -359,7 +359,11 @@ Get the gene expression only predicted subtypes
 
 ### 3.2 Analysis for scRNA-seq data
 
-### Contact:
+``` r
+# get_GEP_pred
+```
+
+# Contact:
 
 Zunsong Hu: <zuhu@coh.org>
 
