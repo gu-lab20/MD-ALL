@@ -13,16 +13,13 @@ knitr::opts_knit$set(root.dir = '/scratch/zuhu/project/rnaseq/')
 ```
 
 
+## Read count data
 ```{r}
 library(MDALL)
-
 df_count=read_input("out_raw/COH000333_D1.5M/TRANSCRIPTOME/HTSeq/COH000333_D1.5M.DUX4patched.HTSeq",delimiter = "\t",header = F)
-df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
 ```
 
-## Normalization
-Normalization with reference data
-
+## Normalization with reference data
 ```{r,message=FALSE,warning=FALSE,error=FALSE}
 # if(!is.null(df_vst_tmp)){df_vst=df_vst_tmp} else 
 #   {df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)}
@@ -98,12 +95,10 @@ get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out,size1 = 0.01,size2 = 2)
 ```{r,message=FALSE,warning=FALSE,error=FALSE}
 out_mutation=get_BALL_mutation("out_raw/COH000333_D1.5M/TRANSCRIPTOME/Mutation/COH000333_D1.5M.HaplotypeCaller.vcf")
 out_mutation$out_text_BALLmutation
-```
 
-## Get mutations
-```{r,message=FALSE,warning=FALSE,error=FALSE}
-out_mutation=get_BALL_mutation("out_raw/COH000333_D1.5M/TRANSCRIPTOME/Mutation/COH000333_D1.5M.HaplotypeCaller.vcf")
-out_mutation$out_text_BALLmutation
+mutation1=BALL.mutation %>% filter(gene=="JAK2")
+
+
 ```
 
 ## Get fusions called by FuisonCatcher
@@ -130,7 +125,14 @@ df_sum=get_subtype_final(
                   fusion_fc = fusion_fc,fusion_c = fusion_c)
 
 
+df_out_test=run_one_sample(sample_id = "COH000333_D1.5M",file_count = "out_raw/COH000333_D1.5M/TRANSCRIPTOME/HTSeq/COH000333_D1.5M.DUX4patched.HTSeq",
+               file_vcf = "out_raw/COH000333_D1.5M/TRANSCRIPTOME/Mutation/COH000333_D1.5M.HaplotypeCaller.vcf",
+               file_fusioncatcher = "out_raw/COH000333_D1.5M/TRANSCRIPTOME/FusionCatcher/final-list_candidate-fusion-genes.txt",
+               featureN_PG = c(100,1058))
+
 ```
+
+
 
 ## BALL subtyping for single cell data
 ```{r,fig.width=24,fig.height=25}

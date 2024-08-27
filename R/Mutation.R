@@ -33,3 +33,17 @@ get_BALL_mutation=function(file_vcf){
               out_text_SubtypeDefiningMutation=out_text_SubtypeDefiningMutation,
               subtype_mutation=subtype_mutation))
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
