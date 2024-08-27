@@ -7,9 +7,11 @@
 #' @export
 #'
 #' @examples
-get_BALL_fusion=function(file_fusion,type,cutoff=2){
-
-  if(!file.exists(file_fusion)){fusion_merge=data.frame()}
+get_BALL_fusion=function(file_fusion="",type,cutoff=2){
+  if(is.null(file_fusion)){fusion_merge=data.frame()}
+  else if(is.na(file_fusion)){fusion_merge=data.frame()}
+  else if(file_fusion==""){fusion_merge=data.frame()}
+  else if(!file.exists(file_fusion)){fusion_merge=data.frame()}
   else if (length(readLines(file_fusion))<=1){fusion_merge=data.frame()}
   else {
     #read fusion file

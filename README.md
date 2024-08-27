@@ -345,22 +345,164 @@ scRNA-seq GEP. <br> <br>
 
 ### 3.1 Analysis for bulk RNA-seq data
 
-#### 3.1.1 Prepare the gene\*sample count matrix
+#### 3.1.1 Read count data
 
 ``` r
-# matrix_count=vroom::vroom("")
+library(MDALL)
+df_count=read_input(file_count,delimiter = "\t",header = F)
 ```
 
-Get the gene expression only predicted subtypes
+#### 3.1.2 Normalization with reference data
 
 ``` r
-# get_GEP_pred
+df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
 ```
 
-### 3.2 Analysis for scRNA-seq data
+#### 3.1.3 Get normalized expression values for feature genes
 
 ``` r
-# get_GEP_pred
+df_feateure_exp=get_geneExpression(df_vst = df_vst,genes = c("CDX2","CRLF2","NUTM1"))
+```
+
+#### 3.1.4 Get gene expression box plot
+
+``` r
+obj_boxplot=obj_merge(obj_in = obj_1821,df_in = df_vst,assay_name_in = "vst")
+draw_BoxPlot(obj_in = obj_boxplot,group.by = "diag_raw1",features = "CRLF2",highlightLevel = "TestSample",plot_title = "Box Plot of Expression")
+```
+
+#### 3.1.5 Imputation
+
+``` r
+df_vst_i=f_imputation(obj_ref = obj_234_HTSeq,df_in = df_vst)
+```
+
+#### 3.1.6 Add testing sample to reference dataset for subtype prediction
+
+``` r
+obj_=obj_merge(obj_in = obj_1821,df_in = df_vst_i,assay_name_in = "vst")
+```
+
+#### 3.1.7 Draw uMAP plot
+
+``` r
+obj_=run_umap(obj_in = obj_,out_label = "umap",n_neighbors = 10,variable_n = c(1058),feature_panel = "keyFeatures")
+draw_DimPlot(obj_,group.by = "diag_raw",reduction = "umap",highlightLevel = "TestSample")
+```
+
+#### 3.1.8 Run PhenoGraph clustering and SVM prediction
+
+``` r
+df_out_phenograph=get_PhenoGraphPreds(obj_in = obj_,feature_panel = "keyFeatures",SampleLevel = "TestSample",
+                                      neighbor_k = 10,
+                                      # variable_n_list = c(seq(100,1000,100),1058)
+                                      variable_n_list = c(100,1058)
+                                      )
+
+df_out_svm=get_SVMPreds(models_svm,df_in = df_vst_i)
+  
+df_pred=bind_rows(df_out_phenograph,df_out_svm) %>% mutate(N=sprintf("%04d",featureN))
+  
+gg_tilePlot(df_in = df_pred,x = "N",y = "method",var_col = "pred",x_tick_label_var = "featureN",title = "Predition Heatmap")
+```
+
+#### 3.1.9 Run RNAseqCNV
+
+``` r
+RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = file_vcf)
+
+CNV_label=paste0(RNAseqCNV_out$df_cnv_out$gender,";\n",RNAseqCNV_out$df_cnv_out$chrom_n,",",RNAseqCNV_out$df_cnv_out$alterations)
+chrom_n=RNAseqCNV_out$df_cnv_out$chrom_n
+
+print(CNV_label)
+print(chrom_n)
+```
+
+Draw RNAseqCNV Plot
+
+``` r
+get_RNAseqCNV_plot(RNAseqCNV_out=RNAseqCNV_out)
+```
+
+#### 3.1.10 Get mutations
+
+``` r
+out_mutation=get_BALL_mutation(file_vcf)
+out_mutation$out_text_BALLmutation
+```
+
+#### 3.1.11 Get fusions
+
+For fusionCaller:
+
+``` r
+fusion_fc=get_BALL_fusion(file_fusioncatcher,type = "fc")
+fusion_fc
+```
+
+For cicero:
+
+``` r
+fusion_c=get_BALL_fusion(file_cicero,type = "fc")
+fusion_c
+```
+
+#### 3.1.12 Get GEP prediction summarise
+
+``` r
+df_sum=get_subtype_final(
+  id="TestSample",
+  df_feateure_exp = df_feateure_exp,
+                  df_out_phenograph = df_out_phenograph,df_out_svm = df_out_svm,
+                  out_mutation = out_mutation,
+                  chrom_n = chrom_n,CNV_label = CNV_label,
+                  fusion_fc = fusion_fc,fusion_c = fusion_c)
+df_sum
+```
+
+### 3.2 Wrap of analysis for one sample
+
+``` r
+df_out_testOne=run_one_sample(sample_id = "TestId",file_count = file_count,
+               file_vcf = file_vcf,
+               file_fusioncatcher = file_fusioncatcher,
+               file_cicero = file_cicero,
+               featureN_PG = c(100,1058))
+df_out_testOne
+```
+
+### 3.3 Wrap of analysis for multiple samples
+
+#### Prepare the listing file of input files
+
+``` r
+df_listing=read.table("test/file_list.tsv",sep  = "\t",header = T)
+df_listing
+```
+
+#### Analysis for multiple samples
+
+``` r
+out_testMul=run_multiple_samples(file_listing = "test/file_list.tsv",featureN_PG = c(100,1058))
+```
+
+#### check results
+
+``` r
+df_out_testMul=out_testMul$df_sums
+df_out_testMul
+```
+
+### 3.4 BALL subtyping for single cell data
+
+``` r
+
+count_sc=read_sc_file("test/countMatrix_singlecell.tsv")
+sc_report=get_SC_subtypes(count_matrix = count_sc,SE_celltype = SE_celltype,SE_BALL = SE_BALL)
+```
+
+``` r
+sc_report
 ```
 
 # Contact:

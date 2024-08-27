@@ -404,8 +404,8 @@ get_subtype_final=function(
   if(df_feateure_exp$Expression[df_feateure_exp$Gene=="CRLF2"]>=9){subtype_exp="CRLF2"}
   if(df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"]>=9){ subtype_exp="CDX2/UBTF"}
   if(df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"]>=9){subtype_exp="NUTM1"}
-  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"]>=9){  subtype_exp="HLF"}
-  if(df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"]>=9){ subtype_exp="DUX4"}
+  # if(df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"]>=9){  subtype_exp="HLF"}
+  # if(df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"]>=9){ subtype_exp="DUX4"}
 
   #CNV
   Chr21Alteration=ifelse(grepl("21",CNV_label),"Yes","No")
@@ -631,7 +631,7 @@ get_subtype_final=function(
   #Modify PAX5alt
   if((!(subtype_final=='PAX5::ETV6' | subtype_final=="PAX5 P80R")) & ((!is.na(confidence) & confidence=="Low")|is.na(confidence))){
     if("PAX5alt" %in%  pg1 & "PAX5alt" %in% svm1){subtype_final='PAX5alt';stage="PAX5merge"}
-    if("PAX5alt" %in%  pg1 & score_phenograph1>0.9 & "PAX5alt" %in% svm1 & score_svm1>0.9){subtype_final='PAX5alt';;stage="PAX5merge";confidence="High"}
+    if("PAX5alt" %in%  pg1 & score_phenograph1>0.9 & "PAX5alt" %in% svm1 & score_svm1>0.9){subtype_final='PAX5alt';stage="PAX5merge";confidence="High"}
   }
 
   #get output table ----
@@ -640,9 +640,9 @@ get_subtype_final=function(
       sample_id=id,
       CDX2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CDX2"],
       CRLF2=df_feateure_exp$Expression[df_feateure_exp$Gene=="CRLF2"],
-      HLF=df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"],
+      # HLF=df_feateure_exp$Expression[df_feateure_exp$Gene=="HLF"],
       NUTM1=df_feateure_exp$Expression[df_feateure_exp$Gene=="NUTM1"],
-      DUX4=df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"],
+      # DUX4=df_feateure_exp$Expression[df_feateure_exp$Gene=="DUX4"],
 
       fusion_fc=  ifelse(
         nrow(fusion_fc_)>=1,
@@ -685,6 +685,69 @@ get_subtype_final=function(
   df_sum
 }
 
+#' run_one_sample
+#'
+#' @param sample_id
+#' @param file_count
+#' @param file_vcf
+#' @param file_fusioncatcher
+#' @param file_cicero
+#' @param featureN_PG
+#' @param minReadCnt
+#' @param minDepth
+#' @param mafmin
+#' @param mafmax
+#'
+#' @return
+#' @export
+#'
+#' @examples
+run_one_sample=function(sample_id="",file_count,file_vcf,file_fusioncatcher="",file_cicero="",featureN_PG=c(100),minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
+  df_count=read_input(file_count,delimiter = "\t",header = F)
+  df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
+  #imputation
+  df_vst_i=f_imputation(obj_ref = obj_234_HTSeq,df_in = df_vst)
+
+  #get feature gene expression
+  df_feateure_exp=get_geneExpression(df_vst = df_vst,genes = c("CDX2","CRLF2","NUTM1"))
+
+  # Add testing sample to reference dataset for subtype prediction
+  obj_=obj_merge(obj_in = obj_1821,df_in = df_vst_i,assay_name_in = "vst")
+
+  #Get phenograph prediction
+  df_out_phenograph=get_PhenoGraphPreds(obj_in = obj_,feature_panel = "keyFeatures",SampleLevel = "TestSample",
+                                        neighbor_k = 10,
+                                        # variable_n_list = c(seq(100,1000,100),1058)
+                                        variable_n_list = c(100)
+  )
+
+  #Get SVM prediction
+  df_out_svm=get_SVMPreds(models_svm,df_in = df_vst_i)
+
+  df_pred=bind_rows(df_out_phenograph,df_out_svm) %>% mutate(N=sprintf("%04d",featureN))
+
+  # Get RNAseqCNV
+  RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = file_vcf,minReadCnt = minReadCnt,minDepth = minDepth,mafRange = c(mafmin,mafmax))
+
+  # Get subtype defining mutation
+  out_mutation=get_BALL_mutation(file_vcf)
+
+  # Get fusions
+  fusion_fc=get_BALL_fusion(file_fusioncatcher,type = "fc")
+
+  fusion_c=get_BALL_fusion(file_cicero,type = "c")
+
+  # Get summary
+  df_sum=get_subtype_final(
+    id="TestSample",
+    df_feateure_exp = df_feateure_exp,
+    df_out_phenograph = df_out_phenograph,df_out_svm = df_out_svm,
+    out_mutation = out_mutation,
+    chrom_n = chrom_n,CNV_label = CNV_label,
+    fusion_fc = fusion_fc,fusion_c = fusion_c)
+  df_sum
+}
+
 #' run_multiple_samples
 #'
 #' @param file_listing
@@ -699,7 +762,7 @@ get_subtype_final=function(
 #'
 #' @examples
 run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
-  df_listing=as.data.frame(vroom::vroom(file_listing))
+  df_listing=as.data.frame(vroom::vroom(file_listing,progress = FALSE,show_col_types=F))
 
   df_listing=df_listing %>% mutate(obs=1:n())
 
@@ -721,6 +784,7 @@ run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDe
   df_outs_phenograph=list()
   df_outs_svm=list()
   RNAseqCNV_outs=list()
+  i=1
   for(i in df_listing$obs){
     sample_id=df_listing$id[i]
 
@@ -743,7 +807,7 @@ run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDe
     df_outs_svm[[sample_id]]=get_SVMPreds(models_svm,df_in = df_vst_i,id = sample_id)
 
     #RNAseqCNV
-    RNAseqCNV_outs[[sample_id]]=run_RNAseqCNV(df_count = read_input(files_count[i]),snv_file = df_listing$VCF[i],
+    RNAseqCNV_outs[[sample_id]]=run_RNAseqCNV(df_count = read_input(files_count[i]),snv_file = df_listing$vcf[i],
                                               genome_version = "hg38",
                                               minReadCnt = minReadCnt,
                                               minDepth = minDepth,
@@ -766,7 +830,7 @@ run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDe
     chrom_n=RNAseqCNV_out$df_cnv_out$chrom_n
 
     #mutation
-    out_mutation=get_BALL_mutation(df_listing$VCF[i])
+    out_mutation=get_BALL_mutation(df_listing$vcf[i])
 
     #fusioncatcher
     fusion_fc=get_BALL_fusion(df_listing$fusioncatcher[i],type = "fc")

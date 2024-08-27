@@ -1,0 +1,3 @@
+id	count	vcf	fusioncatcher	cicero
+COH000893_D1	test/Phlike/COH000893_D1.DUX4patched.HTSeq	test/Phlike/COH000893_D1.HaplotypeCaller.vcf	test/Phlike/COH000893_D1.fusioncatcher	test/Phlike/COH000893_D1.cicero
+COH000353_D1	test/MEF2D/COH000353_D1.DUX4patched.HTSeq	test/MEF2D/COH000353_D1.HaplotypeCaller.vcf	test/MEF2D/COH000353_D1.fusioncatcher	test/MEF2D/COH000353_D1.cicero
