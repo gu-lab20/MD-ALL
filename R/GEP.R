@@ -728,6 +728,8 @@ run_one_sample=function(sample_id="",file_count,file_vcf,file_fusioncatcher="",f
 
   # Get RNAseqCNV
   RNAseqCNV_out=run_RNAseqCNV(df_count = df_count,snv_file = file_vcf,minReadCnt = minReadCnt,minDepth = minDepth,mafRange = c(mafmin,mafmax))
+  CNV_label=paste0(RNAseqCNV_out$df_cnv_out$gender,";\n",RNAseqCNV_out$df_cnv_out$chrom_n,",",RNAseqCNV_out$df_cnv_out$alterations)
+  chrom_n=RNAseqCNV_out$df_cnv_out$chrom_n
 
   # Get subtype defining mutation
   out_mutation=get_BALL_mutation(file_vcf)
