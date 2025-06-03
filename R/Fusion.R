@@ -18,28 +18,33 @@ get_BALL_fusion=function(file_fusion="",type,cutoff=2){
     if(tolower(type) %in% c("fustioncatcher","fc")){
       df_fusion=as.data.frame(data.table::fread(input = file_fusion))
       df_fusion=df_fusion[c(1,2,5,6)]
-      names(df_fusion)=c("gene1","gene2","feature1","feature2")
-      df_fusion=df_fusion %>%
-        filter(feature1>0 & feature2>0) %>%
-        arrange(desc(feature2),desc(feature1)) %>%
-        filter(!(is.na(gene1) | is.na(gene2))) %>%
-        group_by(gene1,gene2) %>%
-        slice_head(n=1) %>%
-        ungroup()
     }
 
     if(tolower(type) %in% c("cicero","c")){
       df_fusion=as.data.frame(data.table::fread(input = file_fusion))
       df_fusion=df_fusion[c(2,7,13,14)]
-      names(df_fusion)=c("gene1","gene2","feature1","feature2")
-      df_fusion=df_fusion %>%
-        filter(feature1>0 & feature2>0) %>%
-        arrange(desc(feature2),desc(feature1)) %>%
-        filter(!(is.na(gene1) | is.na(gene2))) %>%
-        group_by(gene1,gene2) %>%
-        slice_head(n=1) %>%
-        ungroup()
     }
+
+    if(tolower(type) %in% c("arriba")){
+      df_fusion=as.data.frame(data.table::fread(input = file_fusion))
+      df_fusion=df_fusion[c(1,2,10,11)]
+    }
+
+    if(tolower(type) %in% c("dragen")){
+      df_fusion=as.data.frame(data.table::fread(input = file_fusion)) %>%
+        mutate(gene1=word(`#FusionGene`,1,sep="[-]+"),gene2=word(`#FusionGene`,2,sep="[-]+"))
+      df_fusion=df_fusion[c(1,2,10,11)]
+    }
+
+    names(df_fusion)=c("gene1","gene2","feature1","feature2")
+    df_fusion=df_fusion %>%
+      filter(feature1>0 & feature2>0) %>%
+      arrange(desc(feature2),desc(feature1)) %>%
+      filter(!(is.na(gene1) | is.na(gene2))) %>%
+      group_by(gene1,gene2) %>%
+      slice_head(n=1) %>%
+      ungroup()
+
 
     df_fusion$gene1=gsub("@","",df_fusion$gene1);df_fusion$gene2=gsub("@","",df_fusion$gene2);
 

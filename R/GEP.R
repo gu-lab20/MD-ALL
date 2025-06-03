@@ -702,7 +702,8 @@ get_subtype_final=function(
 #' @export
 #'
 #' @examples
-run_one_sample=function(sample_id="",file_count,file_vcf,file_fusioncatcher="",file_cicero="",featureN_PG=c(100),minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
+run_one_sample=function(sample_id="",file_count,file_vcf,file_fusioncatcher="",file_cicero="",featureN_PG=c(seq(100,1000,100),1058),
+                        minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
   df_count=read_input(file_count,delimiter = "\t",header = F)
   df_vst=get_vst_values(obj_in = obj_234_HTSeq,df_count = df_count)
   #imputation
@@ -763,7 +764,8 @@ run_one_sample=function(sample_id="",file_count,file_vcf,file_fusioncatcher="",f
 #' @export
 #'
 #' @examples
-run_multiple_samples=function(file_listing,featureN_PG=c(100),minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
+run_multiple_samples=function(file_listing,featureN_PG=c(seq(100,1000,100),1058),
+                              minReadCnt=3,minDepth=20,mafmin=0.1,mafmax=0.85){
   df_listing=as.data.frame(vroom::vroom(file_listing,progress = FALSE,show_col_types=F))
 
   df_listing=df_listing %>% mutate(obs=1:n())

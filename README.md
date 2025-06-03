@@ -17,13 +17,14 @@ By uploading additional VCF files and raw outputs of fusion callers
 ([FusionCatcher](https://github.com/ndaniel/fusioncatcher) and/or
 [Cicero](https://github.com/stjude/CICERO)), MD-ALL can detect
 B-ALL-related mutations and fussions in test sample and run
-[RNAseqCNV](https://www.nature.com/articles/s41375-022-01547-8) to
-determine chromosome-level CNVs as well as iAMP21. MD-ALL can classify
-B-ALL cases into a total of 26 subtypes using bulk RNA-seq data. For
-scRNA-seq analysis, only a gene (per row) x cell (per column) expression
-matrix is needed. MD-ALL is a one-stop platform for sensitive, accurate,
-and comprehensive B-ALL subtyping based on RNA-seq data. To generate the
-input files for MD-ALL, users can refer to this RNA-seq analysis
+<a href="https://www.nature.com/articles/s41375-022-01547-8"
+target="_blank">RNAseqCNV</a> to determine chromosome-level CNVs as well
+as iAMP21. MD-ALL can classify B-ALL cases into a total of 26 subtypes
+using bulk RNA-seq data. For scRNA-seq analysis, only a gene (per row) x
+cell (per column) expression matrix is needed. MD-ALL is a one-stop
+platform for sensitive, accurate, and comprehensive B-ALL subtyping
+based on RNA-seq data. To generate the input files for MD-ALL, users can
+refer to this RNA-seq analysis
 [pipeline](https://github.com/gu-lab20/RNAseq) from raw fastq files.
 MD-ALL can be run by both shinyAPP or command lines.
 
@@ -32,7 +33,14 @@ The workflow of MD-ALL: <br>
 <img src="img/flowchart.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
 
-## 1\. Installation
+## Publication
+
+Zunsong Hu, Zhilian Jia, Jiangyue Liu, Allen Mao, Helen Han, Zhaohui Gu.
+MD-ALL: an integrative platform for molecular diagnosis of B-acute
+lymphoblastic leukemia. Haematologica. 2024 Jun 1;109(6):1741-1754. doi:
+10.3324/haematol.2023.283706. PMID: 37981856
+
+## 1. Installation
 
 ### 1.1 Install R and RStudio
 
@@ -84,7 +92,7 @@ installation
 [script](https://github.com/gu-lab20/MD-ALL/raw/master/R/install_required_packages.R)
 and run it in RStudio.
 
-## 2\. MD-ALL ShinyApp
+## 2. MD-ALL ShinyApp
 
 #### Luanch the APP
 
@@ -288,8 +296,7 @@ For users who only have the gene read count matrix, MD-ALL offers the
 with rows representing genes and columns representing samples; the first
 column should be the ENSG gene IDs. After uploading the read count
 matrix, the parameters will appear and users can click the ‘Run’ button
-to start the
-analysis.
+to start the analysis.
 
 <img src="img/count_input2.PNG" align="center" width="100%" height="100%"/>
 <br> <br>
@@ -299,8 +306,7 @@ analysis.
 The ‘Count Matrix Only’ mode only contains the results of GEP, since no
 other types of input are used. Users can check the results after the
 analysis is done. Users can still select the sample IDs in the top left
-panel, and the other parts will update
-accordingly:
+panel, and the other parts will update accordingly:
 
 <img src="img/count_output.jpg" align="center" width="100%" height="100%"/>
 <br> <br>
@@ -311,7 +317,7 @@ accordingly:
 
 The input file for scRNA-seq analysis is the count matrix of single
 cells with rows for genes and columns for cells. The
-‘countMatrix\_singlecell.tsv’ file in the same
+‘countMatrix_singlecell.tsv’ file in the same
 [‘tests.zip’](https://github.com/gu-lab20/MD-ALL/raw/master/tests.zip)
 zip file can be used for testing.
 
@@ -341,13 +347,16 @@ scRNA-seq GEP. <br> <br>
 
 <br> <br>
 
-## 3\. MD-ALL Command line
+## 3. MD-ALL Command line
 
 ### 3.1 Analysis for bulk RNA-seq data
 
 #### 3.1.1 Read count data
 
 ``` r
+library(dplyr)
+library(stringr)
+library(Rphenograph)
 library(MDALL)
 df_count=read_input(file_count,delimiter = "\t",header = F)
 ```
@@ -504,6 +513,13 @@ sc_report=get_SC_subtypes(count_matrix = count_sc,SE_celltype = SE_celltype,SE_B
 ``` r
 sc_report
 ```
+
+## Please cite:
+
+Zunsong Hu, Zhilian Jia, Jiangyue Liu, Allen Mao, Helen Han, Zhaohui Gu.
+MD-ALL: an integrative platform for molecular diagnosis of B-acute
+lymphoblastic leukemia. Haematologica. 2024 Jun 1;109(6):1741-1754. doi:
+10.3324/haematol.2023.283706. PMID: 37981856
 
 # Contact:
 
